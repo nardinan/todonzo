@@ -79,8 +79,8 @@ s_reminder *f_reminder_load(s_reminder *array_reminders, const char *dump_file) 
         char *stream_line_tail = strchr(stream_line_buffer, '"');
         if (stream_line_tail) {
           char title[(title_length + 1)], description[(description_length + 1)];
-          memset(title, 0, title_length);
-          memset(description, 0, description_length);
+          memset(title, 0, (title_length + 1));
+          memset(description, 0, (description_length + 1));
           if (sscanf(stream_line_tail, "\"%[^\"]\",\"%[^\"]\"", title, description) > 0)
             array_reminders = f_reminder_add(array_reminders, UID, title, ((description_length) ? description : NULL), expiration_timestamp,
               ((processed)?true:false));
