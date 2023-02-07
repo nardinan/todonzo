@@ -32,7 +32,7 @@ static void p_reminder_escape_string(char *string, char forbidden_character, cha
 s_reminder *f_reminder_add(s_reminder *array_reminders, unsigned int UID, const char *title, const char *description, time_t reminder_trigger_timestamp,
   bool processed) {
   if (title) {
-    array_reminders = f_array_validate_access((void *)array_reminders, m_reminder_index);
+    array_reminders = (s_reminder *)f_array_validate_access((void *)array_reminders, m_reminder_index);
     array_reminders[m_reminder_index].UID = UID;
     array_reminders[m_reminder_index].expiration_timestamp = reminder_trigger_timestamp;
     array_reminders[m_reminder_index].title = strdup(title);

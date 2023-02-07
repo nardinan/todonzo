@@ -22,6 +22,9 @@
  */
 #ifndef TODONZO_NOTIFICATION_H
 #define TODONZO_NOTIFICATION_H
+#include <libnotify/notify.h>
 #include <stdio.h>
-extern void f_notification_show(const char *title, const char *message);
+#include <string.h>
+#define d_notification_application_name "ToDonzo"
+extern void f_notification_show(const char *title, const char *message, const char *icon);
 #endif //TODONZO_NOTIFICATION_H

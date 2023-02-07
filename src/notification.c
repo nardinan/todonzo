@@ -21,6 +21,12 @@
  * SOFTWARE.
  */
 #include "notification.h"
-void f_notification_show(const char *title, const char *message) {
-
+void f_notification_show(const char *title, const char *message, const char *icon) {
+  NotifyNotification *notification;
+  notify_init(d_notification_application_name);
+  if ((notification = notify_notification_new(title, message, icon))) {
+    notify_notification_set_urgency(notification, NOTIFY_URGENCY_CRITICAL);
+    notify_notification_set_timeout(notification, NOTIFY_EXPIRES_NEVER);
+    notify_notification_show(notification, NULL);
+  }
 }
