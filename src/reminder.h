@@ -25,15 +25,17 @@
 #include <time.h>
 #include <stdbool.h>
 #include "array.h"
+#include "notification.h"
 typedef struct s_reminder {
-  char *title, *description;
+  char *title, *description, *icon;
   unsigned int UID;
   time_t expiration_timestamp;
   int processed: 1, initialized: 1;
 } s_reminder;
-extern unsigned int m_reminder_index;
-extern s_reminder *f_reminder_add(s_reminder *array_reminders, unsigned int UID, const char *title, const char *description,
+extern unsigned int m_reminder_index, m_reminder_UID;
+extern s_reminder *f_reminder_add(s_reminder *array_reminders, unsigned int UID, const char *title, const char *description, const char *icon,
   time_t reminder_trigger_timestamp, bool processed);
-extern void f_reminder_save(s_reminder *array_reminders, const char *dump_file);
-extern s_reminder *f_reminder_load(s_reminder *array_reminders, const char *dump_file);
+extern void f_reminder_save(s_reminder *array_reminders, FILE *stream);
+extern s_reminder *f_reminder_load(s_reminder *array_reminders, FILE *stream);
+extern void f_reminder_process(s_reminder *array_reminders);
 #endif //TODONZO_REMINDER_H

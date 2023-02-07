@@ -20,11 +20,19 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-#ifndef TODONZO_NOTIFICATION_H
-#define TODONZO_NOTIFICATION_H
-#include <libnotify/notify.h>
-#include <stdio.h>
+#ifndef TODONZO_XDG_H
+#define TODONZO_XDG_H
 #include <string.h>
-#include "xdg.h"
-extern void f_notification_show(const char *title, const char *message, const char *icon);
-#endif //TODONZO_NOTIFICATION_H
+#include <stdlib.h>
+#include <stdio.h>
+#include <limits.h>
+#define d_application_name "todonzo"
+#ifndef PATH_MAX
+#define PATH_MAX 4096
+#endif
+extern char *f_xdg_get_home(char *buffer, size_t size);
+extern char *f_xdg_search_data(char *buffer, size_t size, const char *filename);
+extern char *f_application_get_home(char *buffer, size_t size);
+extern char *f_application_get_configuration(char *buffer, size_t size);
+extern char *f_application_get_icon(char *buffer, size_t size);
+#endif //TODONZO_XDG_H
