@@ -29,7 +29,7 @@ static int p_todonzo_parse_time_offset(const char *delta_time, const char *fixed
   time_t current_timestamp = time(NULL);
   struct tm *current_time_definition = localtime(&current_timestamp);
   int result = OK;
-  struct {
+  const struct {
     const char *short_extension, *full_extension, *alternate_full_extensions;
     int multiplier, *entry;
   } delta_time_extensions[] = {{"m", "min",  "mins",  1, &(current_time_definition->tm_min)},
@@ -47,8 +47,8 @@ static int p_todonzo_parse_time_offset(const char *delta_time, const char *fixed
     if ((multiplier > 0) && (isascii(*delta_time)))
       for (unsigned int index_extension = 0; (delta_time_extensions[index_extension].short_extension); ++index_extension)
         if ((strcmp(delta_time, delta_time_extensions[index_extension].short_extension) == 0) ||
-          (strcmp(delta_time, delta_time_extensions[index_extension].full_extension) == 0) ||
-          (strcmp(delta_time, delta_time_extensions[index_extension].alternate_full_extensions) == 0)) {
+            (strcmp(delta_time, delta_time_extensions[index_extension].full_extension) == 0) ||
+            (strcmp(delta_time, delta_time_extensions[index_extension].alternate_full_extensions) == 0)) {
           *(delta_time_extensions[index_extension].entry) += (delta_time_extensions[index_extension].multiplier * multiplier);
           break;
         }
@@ -65,10 +65,12 @@ static int p_todonzo_parse_time_offset(const char *delta_time, const char *fixed
         filling_entry = &(current_time_definition->tm_min);
       ++fixed_time;
     }
-    if ((current_time_definition->tm_hour < 0) || (current_time_definition->tm_hour > 23) ||
-      (current_time_definition->tm_min < 0) || (current_time_definition->tm_min > 59)) {
-      fprintf(stderr, "Unable to parse correctly the fixed time (your time cannot be %02d:%02d, this is out of range)\n",
-        current_time_definition->tm_hour, current_time_definition->tm_min);
+    if ((current_time_definition->tm_hour < 0) || (current_time_definition->tm_hour > 23) || (current_time_definition->tm_min < 0) ||
+        (current_time_definition->tm_min > 59)) {
+      fprintf(stderr,
+        "Unable to parse correctly the fixed time (your time cannot be %02d:%02d, this is out of range)\n",
+        current_time_definition->tm_hour,
+        current_time_definition->tm_min);
       result = KO;
     }
   }
@@ -132,7 +134,7 @@ int f_todonzo_run(int argc, char *argv[], s_reminder *reminders) {
 typedef int (*t_todonzo_process)(int, char **, s_reminder *);
 int main(int argc, char *argv[]) {
   int result = KO;
-  struct {
+  static const struct {
     const char *short_parameter, *extend_parameter;
     t_todonzo_process function;
   } functionalities[] = {
@@ -143,12 +145,15 @@ int main(int argc, char *argv[]) {
     { NULL, NULL, NULL }
   };
   /* syntax:
-   * todonzo -a (--add) "this is the title of the notification" +N{w or weeks/d or days/h or hours/m or mins} @<hour/hour:minute>
+   * todonzo -a (--add) "this is the title of the notification" +N{w or weeks/d or days/h or hours/m or mins} @<hour or hour:minute>
    *  The command adds a new notification and postpones it to the next N weeks, days, hours or minutes. Additionally, you might specify a specific hour of the
    *  day (expressed in 24-hour format), or a full date when the notification has to appear.
    *
-   * todonzo -p (--postpone) <UID> +N{w or weeks/d or days/h or hours/m or mins}
+   * todonzo -p (--postpone) <UID>,<UID>,<UID>,... +N{w or weeks/d or days/h or hours/m or mins}
    *  The command postpone the last notification arrived (or a specific notification identified by its UID) by N weeks, days, hours or minutes.
+   *
+   * todonzo -d (--delete) <UID>,<UID>,<UID>,...
+   *  The command removes one or more notifications archived either expired or not
    *
    * todonzo -s (--show)
    *  Shows, in a list, all the pending notifications, and a few of the notifications recently expired.
