@@ -25,6 +25,7 @@
 #define SAVE_REQUIRED 2
 #include <ctype.h>
 #include "reminder.h"
+typedef int (*t_todonzo_process)(int, char **, s_reminder *);
 static int p_todonzo_parse_time_offset(const char *delta_time, const char *fixed_time, time_t *final_timestamp) {
   time_t current_timestamp = time(NULL);
   struct tm *current_time_definition = localtime(&current_timestamp);
@@ -122,6 +123,9 @@ int f_todonzo_add(int argc, char *argv[], s_reminder *reminders) {
   }
   return result;
 }
+int f_todonzo_delete(int argc, char *argv[], s_reminder *reminders) {
+  return 0;
+}
 int f_todonzo_postpone(int argc, char *argv[], s_reminder *reminders) {
   return 0;
 }
@@ -129,9 +133,8 @@ int f_todonzo_show(int argc, char *argv[], s_reminder *reminders) {
   return 0;
 }
 int f_todonzo_run(int argc, char *argv[], s_reminder *reminders) {
-  return 0;
+  return ((f_reminder_process(reminders) > 0) ? SAVE_REQUIRED : OK );
 }
-typedef int (*t_todonzo_process)(int, char **, s_reminder *);
 int main(int argc, char *argv[]) {
   int result = KO;
   static const struct {
@@ -140,31 +143,11 @@ int main(int argc, char *argv[]) {
   } functionalities[] = {
     { "-a", "--add",  f_todonzo_add },
     { "-p", "--postpone", f_todonzo_postpone },
+    { "-d", "--delete", f_todonzo_delete },
     { "-s", "--show", f_todonzo_show },
     { "-r", "--run", f_todonzo_run },
     { NULL, NULL, NULL }
   };
-  /* syntax:
-   * todonzo -a (--add) "this is the title of the notification" +N{w or weeks/d or days/h or hours/m or mins} @<hour or hour:minute>
-   *  The command adds a new notification and postpones it to the next N weeks, days, hours or minutes. Additionally, you might specify a specific hour of the
-   *  day (expressed in 24-hour format), or a full date when the notification has to appear.
-   *
-   * todonzo -p (--postpone) <UID>,<UID>,<UID>,... +N{w or weeks/d or days/h or hours/m or mins}
-   *  The command postpone the last notification arrived (or a specific notification identified by its UID) by N weeks, days, hours or minutes.
-   *
-   * todonzo -d (--delete) <UID>,<UID>,<UID>,...
-   *  The command removes one or more notifications archived either expired or not
-   *
-   * todonzo -s (--show)
-   *  Shows, in a list, all the pending notifications, and a few of the notifications recently expired.
-   *
-   * todonzo -r (--run)
-   *  The application checks if there is notification already expired which has not yet been processed; The system throws the notification to inform the user;
-   *  If multiple notifications are expired, only one is thrown.
-   *
-   * tondozo -h (--help)
-   *  Prints this help
-   */
   if (argc > 1) {
     char configuration_file_path[PATH_MAX];
     FILE *configuration_file_stream;
@@ -192,12 +175,12 @@ int main(int argc, char *argv[]) {
     printf("Todonzo - A quick 'n dirty reminder application for terminal\n\n"
            "\n"
            "Usage:\n"
-           "\t%s -a|--add <title> [description] [+N<w or weeks|d or days|h or hours|m or mins>] [@<hour|hour:minute>] \n"
-           "\t%s -p|--postpone <UID>,<UID>,<UID>,... [+N<w or weeks|d or days|h or hours|m or mins>]\n"
-           "\t%s -d|--delete <UID>,<UID>,<UID>,...\n"
-           "\t%s -s|--show\n"
-           "\t%s -r|--run \n"
-           "\t%s -h|--help\n"
+           "\t%1$s -a|--add <title> [description] [+N<w or weeks|d or days|h or hours|m or mins>] [@<hour|hour:minute>] \n"
+           "\t%1$s -p|--postpone <UID>,<UID>,<UID>,... [+N<w or weeks|d or days|h or hours|m or mins>]\n"
+           "\t%1$s -d|--delete <UID>,<UID>,<UID>,...\n"
+           "\t%1$s -s|--show\n"
+           "\t%1$s -r|--run \n"
+           "\t%1$s -h|--help\n"
            "\n"
            "Todonzo is the perfect companion for any busy programmer, constantly focused on a terminal writing code or\n"
            "typing commands. The system is relatively easy to use and fast to interface with any application you want \n"
@@ -206,14 +189,14 @@ int main(int argc, char *argv[]) {
            "\n"
            "The easiest way to use Todonzo to push a new notification is:\n"
            "\n"
-           "\t%s -a \"Call the boss to discuss the details of the project\" +1day\n"
+           "\t%1$s -a \"Call the boss to discuss the details of the project\" +1day\n"
            "\t\tTodonzo will notify you tomorrow at the same time\n"
            "\n"
-           "\t%s -a \"Check progresses in the main branch\" +1week @10:30\n"
+           "\t%1$s -a \"Check progresses in the main branch\" +1week @10:30\n"
            "\t\tTodonzo will notify you next week, same weekday, at 10:30 AM.\n"
            "\n"
-           "\t%s -a \"Discuss with everybody else about MU-TH-UR 6000 project\" @17\n"
-           "\t\tTodonzo will notify you today, at 5PM\n", argv[0], argv[0], argv[0], argv[0], argv[0], argv[0], argv[0], argv[0], argv[0]);
+           "\t%1$s -a \"Discuss with everybody else about MU-TH-UR 6000 project\" @17\n"
+           "\t\tTodonzo will notify you today, at 5PM\n", argv[0]);
   }
   return 0;
 }

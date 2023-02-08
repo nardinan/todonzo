@@ -21,3 +21,4 @@ target_include_directories(todonzo PUBLIC ${NOTIFY_INCLUDE_DIRS})
 target_compile_options(todonzo PUBLIC ${NOTIFY_CFLAGS_OTHER})
 
 install(TARGETS todonzo DESTINATION bin)
+install(DIRECTORY todonzo DESTINATION share)

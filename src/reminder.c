@@ -99,13 +99,16 @@ s_reminder *f_reminder_load(s_reminder *array_reminders, FILE *stream) {
   }
   return array_reminders;
 }
-void f_reminder_process(s_reminder *array_reminders) {
+int f_reminder_process(s_reminder *array_reminders) {
   time_t current_timestamp = time(NULL);
+  int result = 0;
   for (unsigned int index = 0; index < d_array_size(array_reminders); ++index)
     if ((array_reminders[index].initialized) && (!array_reminders[index].processed))
       if (array_reminders[index].expiration_timestamp <= current_timestamp) {
         f_notification_show(array_reminders[index].title, array_reminders[index].description, array_reminders[index].icon);
         array_reminders[index].processed = true;
+        ++result;
         break;
       }
+  return result;
 }
