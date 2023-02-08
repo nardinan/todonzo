@@ -31,19 +31,16 @@ static void p_reminder_escape_string(char *string, char forbidden_character, cha
 }
 s_reminder *f_reminder_add(s_reminder *array_reminders, unsigned int UID, const char *title, const char *description, const char *icon,
   time_t reminder_trigger_timestamp, bool processed) {
-  if (title) {
+  if ((title) && (icon)) {
     array_reminders = (s_reminder *)f_array_validate_access((void *)array_reminders, m_reminder_index);
     array_reminders[m_reminder_index].UID = UID;
     array_reminders[m_reminder_index].expiration_timestamp = reminder_trigger_timestamp;
     array_reminders[m_reminder_index].title = strdup(title);
+    array_reminders[m_reminder_index].icon = strdup(icon);
     p_reminder_escape_string(array_reminders[m_reminder_index].title, '"', '-');
     if (description) {
       array_reminders[m_reminder_index].description = strdup(description);
       p_reminder_escape_string(array_reminders[m_reminder_index].description, '"', '-');
-    }
-    if (icon) {
-      array_reminders[m_reminder_index].icon = strdup(icon);
-      p_reminder_escape_string(array_reminders[m_reminder_index].icon, '"', '-');
     }
     array_reminders[m_reminder_index].processed = processed;
     array_reminders[m_reminder_index].initialized = true;
@@ -59,15 +56,15 @@ void f_reminder_save(s_reminder *array_reminders, FILE *stream) {
       if (array_reminders[index].initialized)
         fprintf(stream,
           "{%lu,%lu,%lu},%u,%ld,%d,\"%s\",\"%s\",\"%s\"\n",
+          ((array_reminders[index].icon) ? strlen(array_reminders[index].icon) : 0),
           ((array_reminders[index].title) ? strlen(array_reminders[index].title) : 0),
           ((array_reminders[index].description) ? strlen(array_reminders[index].description) : 0),
-          ((array_reminders[index].icon) ? strlen(array_reminders[index].icon) : 0),
           array_reminders[index].UID,
           array_reminders[index].expiration_timestamp,
-          ((array_reminders[index].processed)?1:0),
+          ((array_reminders[index].processed) ? 1 : 0),
+          ((array_reminders[index].icon) ? array_reminders[index].icon : ""),
           ((array_reminders[index].title) ? array_reminders[index].title : ""),
-          ((array_reminders[index].description) ? array_reminders[index].description : ""),
-          ((array_reminders[index].icon) ? array_reminders[index].icon : ""));
+          ((array_reminders[index].description) ? array_reminders[index].description : ""));
 }
 s_reminder *f_reminder_load(s_reminder *array_reminders, FILE *stream) {
   char *stream_line_buffer = NULL;
@@ -77,7 +74,7 @@ s_reminder *f_reminder_load(s_reminder *array_reminders, FILE *stream) {
     size_t title_length = 0, description_length = 0, icon_length = 0;
     time_t expiration_timestamp;
     int processed;
-    if ((sscanf(stream_line_buffer, "{%lu,%lu,%lu},%u,%ld,%d", &title_length, &description_length, &icon_length, &UID,
+    if ((sscanf(stream_line_buffer, "{%lu,%lu,%lu},%u,%ld,%d", &icon_length, &title_length, &description_length, &UID,
       &expiration_timestamp, &processed) > 0) && (title_length > 0)) {
       char *stream_line_tail = strchr(stream_line_buffer, '"');
       if (stream_line_tail) {
@@ -85,7 +82,7 @@ s_reminder *f_reminder_load(s_reminder *array_reminders, FILE *stream) {
         memset(title, 0, (title_length + 1));
         memset(description, 0, (description_length + 1));
         memset(icon, 0, (icon_length + 1));
-        if (sscanf(stream_line_tail, "\"%[^\"]\",\"%[^\"]\",\"%[^\"]\"", title, description, icon) > 0)
+        if (sscanf(stream_line_tail, "\"%[^\"]\",\"%[^\"]\",\"%[^\"]\"", icon, title, description) > 0) {
           array_reminders = f_reminder_add(array_reminders,
             UID,
             title,
@@ -93,6 +90,8 @@ s_reminder *f_reminder_load(s_reminder *array_reminders, FILE *stream) {
             ((icon_length) ? icon : NULL),
             expiration_timestamp,
             ((processed) ? true : false));
+          printf("icon length %lu (%s)\n", icon_length, icon);
+        }
       }
     }
     memset(stream_line_buffer, 0, stream_line_length);
