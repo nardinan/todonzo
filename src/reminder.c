@@ -90,7 +90,6 @@ s_reminder *f_reminder_load(s_reminder *array_reminders, FILE *stream) {
             ((icon_length) ? icon : NULL),
             expiration_timestamp,
             ((processed) ? true : false));
-          printf("icon length %lu (%s)\n", icon_length, icon);
         }
       }
     }
