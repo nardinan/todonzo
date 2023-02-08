@@ -114,6 +114,7 @@ int f_todonzo_add(int argc, char *argv[], s_reminder *reminders) {
       time_t expiration_timestamp;
       if ((result = p_todonzo_parse_time_offset(delta_time, fixed_time, &expiration_timestamp)) == OK) {
         char icon_file_path[PATH_MAX];
+        memset(icon_file_path, 0, PATH_MAX);
         f_application_get_icon(icon_file_path, PATH_MAX);
         f_reminder_add(reminders, m_reminder_UID, title, description, icon_file_path, expiration_timestamp, false);
         result = SAVE_REQUIRED;

@@ -34,7 +34,9 @@ static bool p_xdg_check_file_exists(char *buffer, size_t size, const char *path,
   struct stat file_definition;
   bool result = true;
   snprintf(buffer, size, "%s/%s/%s", path, d_application_name, filename);
+  printf("Checking %s\n", buffer);
   if (stat(buffer, &file_definition) < 0) {
+    printf("\t- invalid\n");
     memset(buffer, 0, size);
     result = false;
   }
@@ -56,11 +58,12 @@ char *f_xdg_search_data(char *buffer, size_t size, const char *filename) {
     xdg_folders_data = xdg_folders_data_fallback;
   starting_pointer = xdg_folders_data;
   memset(buffer, 0, size);
+  printf("%s\n", xdg_folders_data);
   while ((ending_pointer = strchr(starting_pointer, ':'))) {
     *ending_pointer = 0;
     if (p_xdg_check_file_exists(buffer, size, starting_pointer, filename))
       break;
-    starting_pointer =(ending_pointer + 1);
+    starting_pointer = (ending_pointer + 1);
   }
   if (strlen(buffer) == 0)
     p_xdg_check_file_exists(buffer, size, starting_pointer, filename);
@@ -78,6 +81,5 @@ char *f_application_get_configuration(char *buffer, size_t size) {
   return buffer;
 }
 char *f_application_get_icon(char *buffer, size_t size) {
-  f_xdg_search_data(buffer, size, d_application_name".png");
-  return buffer;
+  return f_xdg_search_data(buffer, size, d_application_name".png");
 }
