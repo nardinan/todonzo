@@ -1,4 +1,5 @@
 #TODONZO
+
 ###An amazing quick n' dirty reminder for Linux and Mac for people that have no time for GUIs (written in C)
 
 Todonzo is the perfect companion for any busy programmer, constantly focused on a terminal writing code or typing commands. The system is relatively easy to use and fast to interface with any application you want (e.g., vim). The application uses libnotify to trigger notifications, but it can easily be interfaced with any notification routine you wish to use.
