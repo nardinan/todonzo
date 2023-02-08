@@ -220,13 +220,13 @@ int main(int argc, char *argv[]) {
         "\n"
         "The easiest way to use Todonzo to push a new notification is:\n"
         "\n"
-        "\t%1$s -a \"Call the boss to discuss the details of the project\" +1day\n"
+        "\t%1$s -a \"Call the boss to validate the details of the USS Sulaco\" +1day\n"
         "\t\tTodonzo will notify you tomorrow at the same time\n"
         "\n"
         "\t%1$s -a \"Check progresses in the main branch\" +1week @10:30\n"
         "\t\tTodonzo will notify you next week, same weekday, at 10:30 AM.\n"
         "\n"
-        "\t%1$s -a \"Discuss with everybody else about MU-TH-UR 6000 project\" @17\n"
+        "\t%1$s -a \"Discuss with the team the MU-TH-UR 6000 project\" @17\n"
         "\t\tTodonzo will notify you today at 5 PM.\n", argv[0]);
   }
   return 0;
