@@ -20,6 +20,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+#include <math.h>
 #include "reminder.h"
 unsigned int m_reminder_index, m_reminder_UID;
 static void p_reminder_escape_string(char *string, char forbidden_character, char replacement_character) {
@@ -44,6 +45,18 @@ s_reminder *f_reminder_add(s_reminder *array_reminders, unsigned int UID, const 
     }
     array_reminders[m_reminder_index].processed = processed;
     array_reminders[m_reminder_index].initialized = true;
+    if (m_reminder_index > 0) {
+      int index_pivot = (m_reminder_index - 1); /* (index_pivot + 1) tells at which position the node should be moved */
+      while ((index_pivot >= 0) &&
+          (array_reminders[m_reminder_index].expiration_timestamp >= array_reminders[index_pivot].expiration_timestamp))
+        --index_pivot;
+      if ((index_pivot + 1) < m_reminder_index) {
+        s_reminder temporary_holder;
+        memcpy(&temporary_holder, &(array_reminders[m_reminder_index]), sizeof(s_reminder));
+        memmove(&(array_reminders[index_pivot + 2]), &(array_reminders[index_pivot + 1]), (sizeof(s_reminder) * (m_reminder_index - (index_pivot + 1))));
+        memcpy(&(array_reminders[index_pivot + 1]), &temporary_holder, sizeof(s_reminder));
+      }
+    }
     if (array_reminders[m_reminder_index].UID >= m_reminder_UID)
       m_reminder_UID = (array_reminders[m_reminder_index].UID + 1);
     ++m_reminder_index;
@@ -55,16 +68,29 @@ void f_reminder_save(s_reminder *array_reminders, FILE *stream) {
     for (unsigned int index = 0; index < d_array_size(array_reminders); ++index)
       if (array_reminders[index].initialized)
         fprintf(stream,
-          "{%lu,%lu,%lu},%u,%ld,%d,\"%s\",\"%s\",\"%s\"\n",
-          ((array_reminders[index].icon) ? strlen(array_reminders[index].icon) : 0),
-          ((array_reminders[index].title) ? strlen(array_reminders[index].title) : 0),
-          ((array_reminders[index].description) ? strlen(array_reminders[index].description) : 0),
-          array_reminders[index].UID,
-          array_reminders[index].expiration_timestamp,
-          ((array_reminders[index].processed) ? 1 : 0),
-          ((array_reminders[index].icon) ? array_reminders[index].icon : ""),
-          ((array_reminders[index].title) ? array_reminders[index].title : ""),
-          ((array_reminders[index].description) ? array_reminders[index].description : ""));
+            "{%lu,%lu,%lu},%u,%ld,%d,\"%s\",\"%s\",\"%s\"\n",
+            ((array_reminders[index].icon) ? strlen(array_reminders[index].icon) : 0),
+            ((array_reminders[index].title) ? strlen(array_reminders[index].title) : 0),
+            ((array_reminders[index].description) ? strlen(array_reminders[index].description) : 0),
+            array_reminders[index].UID,
+            array_reminders[index].expiration_timestamp,
+            ((array_reminders[index].processed) ? 1 : 0),
+            ((array_reminders[index].icon) ? array_reminders[index].icon : ""),
+            ((array_reminders[index].title) ? array_reminders[index].title : ""),
+            ((array_reminders[index].description) ? array_reminders[index].description : ""));
+}
+void f_reminder_human_readable_output(s_reminder *array_reminders, FILE *stream) {
+  if (stream) {
+    unsigned int UID_digits = floor(log10(m_reminder_UID) + 1);
+    for (int index = (d_array_size(array_reminders) - 1); index >= 0; --index)
+      if (array_reminders[index].initialized) {
+        struct tm *expiration_timestamp_definition = localtime(&(array_reminders[index].expiration_timestamp));
+        fprintf(stream, "%s[%*d] \"%s\" set for %02d/%02d/%04d @ %02d:%02d %s%s\n", ((array_reminders[index].processed) ? d_reminder_color_yellow : ""),
+            UID_digits, array_reminders[index].UID, array_reminders[index].title, expiration_timestamp_definition->tm_mday,
+            expiration_timestamp_definition->tm_mon, (expiration_timestamp_definition->tm_year + 1900), expiration_timestamp_definition->tm_hour,
+            expiration_timestamp_definition->tm_min, ((array_reminders[index].processed) ? "(expired)" : ""), d_reminder_color_reset);
+      }
+  }
 }
 s_reminder *f_reminder_load(s_reminder *array_reminders, FILE *stream) {
   char *stream_line_buffer = NULL;
@@ -75,7 +101,7 @@ s_reminder *f_reminder_load(s_reminder *array_reminders, FILE *stream) {
     time_t expiration_timestamp;
     int processed;
     if ((sscanf(stream_line_buffer, "{%lu,%lu,%lu},%u,%ld,%d", &icon_length, &title_length, &description_length, &UID,
-      &expiration_timestamp, &processed) > 0) && (title_length > 0)) {
+            &expiration_timestamp, &processed) > 0) && (title_length > 0)) {
       char *stream_line_tail = strchr(stream_line_buffer, '"');
       if (stream_line_tail) {
         char title[(title_length + 1)], description[(description_length + 1)], icon[(icon_length + 1)];
@@ -84,12 +110,12 @@ s_reminder *f_reminder_load(s_reminder *array_reminders, FILE *stream) {
         memset(icon, 0, (icon_length + 1));
         if (sscanf(stream_line_tail, "\"%[^\"]\",\"%[^\"]\",\"%[^\"]\"", icon, title, description) > 0) {
           array_reminders = f_reminder_add(array_reminders,
-            UID,
-            title,
-            ((description_length) ? description : NULL),
-            ((icon_length) ? icon : NULL),
-            expiration_timestamp,
-            ((processed) ? true : false));
+              UID,
+              title,
+              ((description_length) ? description : NULL),
+              ((icon_length) ? icon : NULL),
+              expiration_timestamp,
+              ((processed) ? true : false));
         }
       }
     }

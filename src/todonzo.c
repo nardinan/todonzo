@@ -26,7 +26,7 @@
 #include <ctype.h>
 #include "reminder.h"
 typedef int (*t_todonzo_process)(int, char **, s_reminder *);
-static int p_todonzo_parse_time_offset(const char *delta_time, const char *fixed_time, time_t *final_timestamp) {
+static int p_todonzo_parse_time_offset(const char *delta_time, const char *fixed_time, time_t *reference_timestamp, time_t *final_timestamp) {
   time_t current_timestamp = time(NULL);
   struct tm *current_time_definition = localtime(&current_timestamp);
   int result = OK;
@@ -75,8 +75,11 @@ static int p_todonzo_parse_time_offset(const char *delta_time, const char *fixed
       result = KO;
     }
   }
-  if (result == OK)
+  if (result == OK) {
+    if (reference_timestamp)
+      *reference_timestamp = current_timestamp;
     *final_timestamp = mktime(current_time_definition);
+  }
   return result;
 }
 int f_todonzo_add(int argc, char *argv[], s_reminder *reminders) {
@@ -112,7 +115,7 @@ int f_todonzo_add(int argc, char *argv[], s_reminder *reminders) {
   if (result == OK) {
     if ((title) && ((delta_time) || (fixed_time))) {
       time_t expiration_timestamp;
-      if ((result = p_todonzo_parse_time_offset(delta_time, fixed_time, &expiration_timestamp)) == OK) {
+      if ((result = p_todonzo_parse_time_offset(delta_time, fixed_time, NULL, &expiration_timestamp)) == OK) {
         char icon_file_path[PATH_MAX];
         memset(icon_file_path, 0, PATH_MAX);
         f_application_get_icon(icon_file_path, PATH_MAX);
@@ -131,7 +134,8 @@ int f_todonzo_postpone(int argc, char *argv[], s_reminder *reminders) {
   return 0;
 }
 int f_todonzo_show(int argc, char *argv[], s_reminder *reminders) {
-  return 0;
+  f_reminder_human_readable_output(reminders, stdout);
+  return OK;
 }
 int f_todonzo_run(int argc, char *argv[], s_reminder *reminders) {
   return ((f_reminder_process(reminders) > 0) ? SAVE_REQUIRED : OK );
@@ -160,7 +164,7 @@ int main(int argc, char *argv[]) {
     }
     for (unsigned int index_functionalities = 0; (functionalities[index_functionalities].short_parameter); ++index_functionalities)
       if ((strcmp(argv[1], functionalities[index_functionalities].short_parameter) == 0) ||
-        ((functionalities[index_functionalities].extend_parameter) && (strcmp(argv[1], functionalities[index_functionalities].extend_parameter) == 0))) {
+          ((functionalities[index_functionalities].extend_parameter) && (strcmp(argv[1], functionalities[index_functionalities].extend_parameter) == 0))) {
         result = functionalities[index_functionalities].function((argc - 2), &(argv[2]), reminders);
         break;
       }
@@ -174,30 +178,30 @@ int main(int argc, char *argv[]) {
   if (result == KO) {
     /* we need to print the help page */
     printf("Todonzo - A quick 'n dirty reminder application for terminal\n\n"
-           "\n"
-           "Usage:\n"
-           "\t%1$s -a|--add <title> [description] [+N<w or weeks|d or days|h or hours|m or mins>] [@<hour|hour:minute>] \n"
-           "\t%1$s -p|--postpone <UID>,<UID>,<UID>,... [+N<w or weeks|d or days|h or hours|m or mins>]\n"
-           "\t%1$s -d|--delete <UID>,<UID>,<UID>,...\n"
-           "\t%1$s -s|--show\n"
-           "\t%1$s -r|--run \n"
-           "\t%1$s -h|--help\n"
-           "\n"
-           "Todonzo is the perfect companion for any busy programmer, constantly focused on a terminal writing code or\n"
-           "typing commands. The system is relatively easy to use and fast to interface with any application you want \n"
-           "(e.g., vim). The application uses libnotify to trigger notifications, but it can easily be interfaced with\n"
-           "any notification routine you wish to use.\n"
-           "\n"
-           "The easiest way to use Todonzo to push a new notification is:\n"
-           "\n"
-           "\t%1$s -a \"Call the boss to discuss the details of the project\" +1day\n"
-           "\t\tTodonzo will notify you tomorrow at the same time\n"
-           "\n"
-           "\t%1$s -a \"Check progresses in the main branch\" +1week @10:30\n"
-           "\t\tTodonzo will notify you next week, same weekday, at 10:30 AM.\n"
-           "\n"
-           "\t%1$s -a \"Discuss with everybody else about MU-TH-UR 6000 project\" @17\n"
-           "\t\tTodonzo will notify you today, at 5PM\n", argv[0]);
+        "\n"
+        "Usage:\n"
+        "\t%1$s -a|--add <title> [description] [+N<w or weeks|d or days|h or hours|m or mins>] [@<hour|hour:minute>] \n"
+        "\t%1$s -p|--postpone <UID>,<UID>,<UID>,... [+N<w or weeks|d or days|h or hours|m or mins>]\n"
+        "\t%1$s -d|--delete <UID>,<UID>,<UID>,...\n"
+        "\t%1$s -s|--show\n"
+        "\t%1$s -r|--run \n"
+        "\t%1$s -h|--help\n"
+        "\n"
+        "Todonzo is the perfect companion for any busy programmer, constantly focused on a terminal writing code or\n"
+        "typing commands. The system is relatively easy to use and fast to interface with any application you want \n"
+        "(e.g., vim). The application uses libnotify to trigger notifications, but it can easily be interfaced with\n"
+        "any notification routine you wish to use.\n"
+        "\n"
+        "The easiest way to use Todonzo to push a new notification is:\n"
+        "\n"
+        "\t%1$s -a \"Call the boss to discuss the details of the project\" +1day\n"
+        "\t\tTodonzo will notify you tomorrow at the same time\n"
+        "\n"
+        "\t%1$s -a \"Check progresses in the main branch\" +1week @10:30\n"
+        "\t\tTodonzo will notify you next week, same weekday, at 10:30 AM.\n"
+        "\n"
+        "\t%1$s -a \"Discuss with everybody else about MU-TH-UR 6000 project\" @17\n"
+        "\t\tTodonzo will notify you today, at 5PM\n", argv[0]);
   }
   return 0;
 }
