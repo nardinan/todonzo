@@ -20,7 +20,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-#include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #include <stdbool.h>
@@ -51,7 +50,8 @@ char *f_xdg_get_home(char *buffer, size_t size) {
   return buffer;
 }
 char *f_xdg_search_data(char *buffer, size_t size, const char *filename) {
-  char *xdg_folders_data_fallback = "/usr/local/share/:/usr/share/", *xdg_folders_data, *starting_pointer, *ending_pointer;
+  static char *xdg_folders_data_fallback = "/usr/local/share/:/usr/share/";
+  char *xdg_folders_data, *starting_pointer, *ending_pointer;
   if (!(xdg_folders_data = getenv("XDG_DATA_DIRS")))
     xdg_folders_data = xdg_folders_data_fallback;
   starting_pointer = xdg_folders_data;
@@ -64,6 +64,16 @@ char *f_xdg_search_data(char *buffer, size_t size, const char *filename) {
   }
   if (strlen(buffer) == 0)
     p_xdg_check_file_exists(buffer, size, starting_pointer, filename);
+  return buffer;
+}
+char *f_xdg_get_runtime(char *buffer, size_t size) {
+  char *xdg_folder_runtime;
+  memset(buffer, 0, size);
+  if (!(xdg_folder_runtime = getenv("XDG_RUNTIME_DIR")))
+    strncpy(buffer, "/tmp/"d_application_name, size);
+  else
+    strncpy(buffer, xdg_folder_runtime, size);
+  p_xdg_check_and_create(buffer);
   return buffer;
 }
 char *f_application_get_home(char *buffer, size_t size) {
@@ -79,4 +89,9 @@ char *f_application_get_configuration(char *buffer, size_t size) {
 }
 char *f_application_get_icon(char *buffer, size_t size) {
   return f_xdg_search_data(buffer, size, d_application_name".png");
+}
+char *f_application_get_lock(char *buffer, size_t size) {
+  f_xdg_get_runtime(buffer, size);
+  strncat(buffer, "/"d_application_name".lock", size);
+  return buffer;
 }

@@ -25,6 +25,7 @@
 #define SAVE_REQUIRED 2
 #include <ctype.h>
 #include "reminder.h"
+#include "lock.h"
 typedef int (*t_todonzo_process)(int, char **, s_reminder *);
 static int p_todonzo_parse_time_offset(const char *delta_time, const char *fixed_time, time_t *reference_timestamp, time_t *final_timestamp) {
   time_t current_timestamp = time(NULL);
@@ -154,26 +155,30 @@ int main(int argc, char *argv[]) {
     { NULL, NULL, NULL }
   };
   if (argc > 1) {
-    char configuration_file_path[PATH_MAX];
-    FILE *configuration_file_stream;
-    s_reminder *reminders = f_array_malloc(8, sizeof(s_reminder));
-    f_application_get_configuration(configuration_file_path, PATH_MAX);
-    if ((configuration_file_stream = fopen(configuration_file_path, "r"))) {
-      f_reminder_load(reminders, configuration_file_stream);
-      fclose(configuration_file_stream);
-    }
-    for (unsigned int index_functionalities = 0; (functionalities[index_functionalities].short_parameter); ++index_functionalities)
-      if ((strcmp(argv[1], functionalities[index_functionalities].short_parameter) == 0) ||
-          ((functionalities[index_functionalities].extend_parameter) && (strcmp(argv[1], functionalities[index_functionalities].extend_parameter) == 0))) {
-        result = functionalities[index_functionalities].function((argc - 2), &(argv[2]), reminders);
-        break;
-      }
-    if (result == SAVE_REQUIRED)
-      if ((configuration_file_stream = fopen(configuration_file_path, "w"))) {
-        f_reminder_save(reminders, configuration_file_stream);
+    int lock_file_stream;
+    if ((lock_file_stream = f_lock_wait_availability()) >= 0) {
+      char configuration_file_path[PATH_MAX];
+      FILE *configuration_file_stream;
+      s_reminder *reminders = f_array_malloc(8, sizeof(s_reminder));
+      f_application_get_configuration(configuration_file_path, PATH_MAX);
+      if ((configuration_file_stream = fopen(configuration_file_path, "r"))) {
+        f_reminder_load(reminders, configuration_file_stream);
         fclose(configuration_file_stream);
       }
-    f_array_free(reminders);
+      for (unsigned int index_functionalities = 0; (functionalities[index_functionalities].short_parameter); ++index_functionalities)
+        if ((strcmp(argv[1], functionalities[index_functionalities].short_parameter) == 0) ||
+            ((functionalities[index_functionalities].extend_parameter) && (strcmp(argv[1], functionalities[index_functionalities].extend_parameter) == 0))) {
+          result = functionalities[index_functionalities].function((argc - 2), &(argv[2]), reminders);
+          break;
+        }
+      if (result == SAVE_REQUIRED)
+        if ((configuration_file_stream = fopen(configuration_file_path, "w"))) {
+          f_reminder_save(reminders, configuration_file_stream);
+          fclose(configuration_file_stream);
+        }
+      f_lock_unlock(lock_file_stream);
+      f_array_free(reminders);
+    }
   }
   if (result == KO) {
     /* we need to print the help page */

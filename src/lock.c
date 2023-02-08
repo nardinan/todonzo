@@ -20,21 +20,22 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-#ifndef TODONZO_XDG_H
-#define TODONZO_XDG_H
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <limits.h>
-#define d_application_name "todonzo"
-#ifndef PATH_MAX
-#define PATH_MAX 4096
-#endif
-extern char *f_xdg_get_home(char *buffer, size_t size);
-extern char *f_xdg_search_data(char *buffer, size_t size, const char *filename);
-extern char *f_xdg_get_runtime(char *buffer, size_t size);
-extern char *f_application_get_home(char *buffer, size_t size);
-extern char *f_application_get_configuration(char *buffer, size_t size);
-extern char *f_application_get_icon(char *buffer, size_t size);
-extern char *f_application_get_lock(char *buffer, size_t size);
-#endif //TODONZO_XDG_H
+#include <unistd.h>
+#include "lock.h"
+int f_lock_wait_availability(void) {
+  char lock_file_path[PATH_MAX];
+  int lock_file_stream = -1;
+  f_application_get_lock(lock_file_path, PATH_MAX);
+  if ((lock_file_stream = open(lock_file_path, (O_CREAT | O_RDWR), 0666)) != -1)
+    if (flock(lock_file_stream, LOCK_EX) != 0) {
+      close(lock_file_stream);
+      lock_file_stream = -1;
+    }
+  return lock_file_stream;
+}
+void f_lock_unlock(int lock_file_stream) {
+  if (lock_file_stream >= 0) {
+    flock(lock_file_stream, LOCK_UN);
+    close(lock_file_stream);
+  }
+}

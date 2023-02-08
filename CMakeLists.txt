@@ -12,7 +12,9 @@ add_executable(todonzo
   src/notification.c
   src/notification.h
   src/xdg.c
-  src/xdg.h)
+  src/xdg.h
+  src/lock.c
+  src/lock.h)
 
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(NOTIFY REQUIRED libnotify)
