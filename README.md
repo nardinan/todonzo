@@ -1,10 +1,9 @@
-#TODONZO
-
-###An amazing quick n' dirty reminder for Linux and Mac for people that have no time for GUIs (written in C)
+# TODONZO
+### An amazing quick n' dirty reminder for Linux and Mac for people that have no time for GUIs (written in C)
 
 Todonzo is the perfect companion for any busy programmer, constantly focused on a terminal writing code or typing commands. The system is relatively easy to use and fast to interface with any application you want (e.g., vim). The application uses libnotify to trigger notifications, but it can easily be interfaced with any notification routine you wish to use.
 
-###Compile
+### Compile
 
 Todonzo uses the standard CMake approach. Create a "build" folder, jump into it, and run your CMake command:
 
@@ -29,7 +28,7 @@ Great! Todonzo is now installed. However, you may want him to check if some noti
 echo "* * * * * $USER todonzo -r" | sudo tee /etc/cron.d/todonzo
 ```
 
-###Usage
+### Usage
 
 {required parameter}
 
@@ -46,7 +45,7 @@ echo "* * * * * $USER todonzo -r" | sudo tee /etc/cron.d/todonzo
 The easiest way to use Todonzo to push a new notification is:
 
 ```console
-todonzo -a "Call the boss to discuss the details of the project" +1day
+todonzo -a "Call the boss to validate the details of the USS Sulaco" +1day
 ```
 > *Todonzo will notify you tomorrow at the same time.*
 
@@ -56,6 +55,6 @@ todonzo -a "Check progresses in the main branch" +1week @10
 > *Todonzo will notify you next week, same weekday, at 10 AM.*
 
 ```console
-todonzo -a "Discuss with everybody else about MU-TH-UR 6000 project" @17
+todonzo -a "Discuss with the team the MU-TH-UR 6000 project" @17
 ```
 > *Todonzo will notify you today at 5 PM.*
