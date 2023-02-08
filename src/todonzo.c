@@ -27,6 +27,10 @@
 #include "reminder.h"
 #include "lock.h"
 typedef int (*t_todonzo_process)(int, char **, s_reminder *);
+typedef int (*t_todonzo_run_on_UID)(int, s_reminder *);
+static void p_todonzo_run_on_UID(const char *UID_list, t_todonzo_run_on_UID f_todonzo_run_on_UID, s_reminder *reminders) {
+
+}
 static int p_todonzo_parse_time_offset(const char *delta_time, const char *fixed_time, time_t *reference_timestamp, time_t *final_timestamp) {
   time_t current_timestamp = time(NULL);
   struct tm *current_time_definition = localtime(&current_timestamp);
@@ -129,13 +133,32 @@ int f_todonzo_add(int argc, char *argv[], s_reminder *reminders) {
   return result;
 }
 int f_todonzo_delete(int argc, char *argv[], s_reminder *reminders) {
-  return 0;
-}
-int f_todonzo_postpone(int argc, char *argv[], s_reminder *reminders) {
-  return 0;
+  int result = KO;
+  if (argc > 0) {
+    int UID = -1;
+    char *UID_list = argv[0];
+    while (*UID_list) {
+      if (isdigit(*UID_list)) {
+        if (UID < 0)
+          UID = 0;
+        UID = (UID * 10) + (*UID_list - '0');
+      } else if (UID >= 0) {
+        if (f_reminder_delete(reminders, UID) > 0)
+          result = SAVE_REQUIRED;
+        else if (result == KO)
+          result = OK;
+        UID = -1;
+      }
+      ++UID_list;
+    }
+  }
+  return result;
 }
 int f_todonzo_show(int argc, char *argv[], s_reminder *reminders) {
-  f_reminder_human_readable_output(reminders, stdout);
+  bool show_expired = false;
+  if ((argc > 0) && ((strcmp(argv[0], "-x") == 0) || (strcmp(argv[0], "--expired") == 0)))
+    show_expired = true;
+  f_reminder_human_readable_output(reminders, show_expired, stdout);
   return OK;
 }
 int f_todonzo_run(int argc, char *argv[], s_reminder *reminders) {
@@ -148,7 +171,6 @@ int main(int argc, char *argv[]) {
     t_todonzo_process function;
   } functionalities[] = {
     { "-a", "--add",  f_todonzo_add },
-    { "-p", "--postpone", f_todonzo_postpone },
     { "-d", "--delete", f_todonzo_delete },
     { "-s", "--show", f_todonzo_show },
     { "-r", "--run", f_todonzo_run },
@@ -186,9 +208,8 @@ int main(int argc, char *argv[]) {
         "\n"
         "Usage:\n"
         "\t%1$s -a|--add <title> [description] [+N<w or weeks|d or days|h or hours|m or mins>] [@<hour|hour:minute>] \n"
-        "\t%1$s -p|--postpone <UID>,<UID>,<UID>,... [+N<w or weeks|d or days|h or hours|m or mins>]\n"
         "\t%1$s -d|--delete <UID>,<UID>,<UID>,...\n"
-        "\t%1$s -s|--show\n"
+        "\t%1$s -s|--show [-x|--expired]\n"
         "\t%1$s -r|--run \n"
         "\t%1$s -h|--help\n"
         "\n"
