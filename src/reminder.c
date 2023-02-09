@@ -92,7 +92,7 @@ void f_reminder_human_readable_output(s_reminder *array_reminders, bool show_exp
           array_reminders[index].UID,
           array_reminders[index].title,
           expiration_timestamp_definition->tm_mday,
-          expiration_timestamp_definition->tm_mon,
+          (expiration_timestamp_definition->tm_mon + 1),
           (expiration_timestamp_definition->tm_year + 1900),
           expiration_timestamp_definition->tm_hour,
           expiration_timestamp_definition->tm_min,
