@@ -26,9 +26,6 @@
 #include <stdbool.h>
 #include "array.h"
 #include "notification.h"
-#define d_reminder_color_green  "\x1B[32m"
-#define d_reminder_color_yellow "\x1B[33m"
-#define d_reminder_color_reset  "\x1B[0m"
 typedef struct s_reminder {
   char *title, *description, *icon;
   unsigned int UID;

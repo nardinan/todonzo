@@ -87,7 +87,7 @@ void f_reminder_human_readable_output(s_reminder *array_reminders, bool show_exp
         struct tm *expiration_timestamp_definition = localtime(&(array_reminders[index].expiration_timestamp));
         fprintf(stream,
           "%s[%*d] \"%s\" set for %02d/%02d/%04d @ %02d:%02d %s%s\n",
-          ((array_reminders[index].processed) ? d_reminder_color_yellow : ""),
+          ((array_reminders[index].processed) ? d_notification_color_yellow : ""),
           UID_digits,
           array_reminders[index].UID,
           array_reminders[index].title,
@@ -97,7 +97,7 @@ void f_reminder_human_readable_output(s_reminder *array_reminders, bool show_exp
           expiration_timestamp_definition->tm_hour,
           expiration_timestamp_definition->tm_min,
           ((array_reminders[index].processed) ? "(expired)" : ""),
-          d_reminder_color_reset);
+          d_notification_reset);
       }
   }
 }
