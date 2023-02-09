@@ -60,6 +60,9 @@ static int p_todonzo_parse_time_offset(const char *delta_time, const char *fixed
           delta_time);
         result = KO;
       }
+    } else {
+      fprintf(stderr, "Woops:\n\timpossible to parse the delta time ('%s' doesn't make any sense)\n\n", delta_time);
+      result = KO;
     }
   }
   if ((result == OK) && (fixed_time)) {
