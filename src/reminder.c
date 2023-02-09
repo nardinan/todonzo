@@ -118,7 +118,7 @@ s_reminder *f_reminder_load(s_reminder *array_reminders, FILE *stream) {
         memset(title, 0, (title_length + 1));
         memset(description, 0, (description_length + 1));
         memset(icon, 0, (icon_length + 1));
-        if (strlen(stream_line_tail) >= (1 + icon_length + 3 + title_length + 3 + icon_length + 1)) {
+        if (strlen(stream_line_tail) >= (1 + icon_length + 3 + title_length + 3 + description_length + 1)) {
           ++stream_line_tail;
           if (icon_length)
             strncpy(icon, stream_line_tail, icon_length);
