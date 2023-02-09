@@ -46,16 +46,23 @@ static int p_todonzo_parse_time_offset(const char *delta_time, const char *fixed
       multiplier = (multiplier * 10) + (*delta_time - '0');
       ++delta_time;
     }
-    if ((multiplier > 0) && (isascii(*delta_time)))
-      for (unsigned int index_extension = 0; (delta_time_extensions[index_extension].short_extension); ++index_extension)
+    if ((multiplier > 0) && (isascii(*delta_time))) {
+      unsigned int index_extension = 0;
+      for ( ; (delta_time_extensions[index_extension].short_extension); ++index_extension)
         if ((strcmp(delta_time, delta_time_extensions[index_extension].short_extension) == 0) ||
             (strcmp(delta_time, delta_time_extensions[index_extension].full_extension) == 0) ||
             (strcmp(delta_time, delta_time_extensions[index_extension].alternate_full_extensions) == 0)) {
           *(delta_time_extensions[index_extension].entry) += (delta_time_extensions[index_extension].multiplier * multiplier);
           break;
         }
+      if (!delta_time_extensions[index_extension].short_extension) {
+        fprintf(stderr, "Unable to parse correctly the delta time ('%s' doesn't make any sense as it doesn't match with our time domain)\n",
+          delta_time);
+        result = KO;
+      }
+    }
   }
-  if (fixed_time) {
+  if ((result == OK) && (fixed_time)) {
     int *filling_entry = &(current_time_definition->tm_hour);
     ++fixed_time;
     current_time_definition->tm_hour = 0;
