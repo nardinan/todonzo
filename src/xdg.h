@@ -27,6 +27,9 @@
 #include <stdio.h>
 #include <limits.h>
 #define d_application_name "todonzo"
+#define d_application_version_major 0
+#define d_application_version_minor 1
+#define d_application_version_patch 0
 #ifndef PATH_MAX
 #define PATH_MAX 4096
 #endif

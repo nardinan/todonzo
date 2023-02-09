@@ -83,7 +83,7 @@ void f_reminder_human_readable_output(s_reminder *array_reminders, bool show_exp
   if (stream) {
     unsigned int UID_digits = floor(log10(m_reminder_UID) + 1);
     for (int index = (d_array_size(array_reminders) - 1); index >= 0; --index)
-      if ((array_reminders[index].initialized) && ((show_expired) || (!array_reminders[index].expiration_timestamp))) {
+      if ((array_reminders[index].initialized) && ((show_expired) || (!array_reminders[index].processed))) {
         struct tm *expiration_timestamp_definition = localtime(&(array_reminders[index].expiration_timestamp));
         fprintf(stream,
           "%s[%*d] \"%s\" set for %02d/%02d/%04d @ %02d:%02d %s%s\n",
@@ -109,9 +109,8 @@ s_reminder *f_reminder_load(s_reminder *array_reminders, FILE *stream) {
     size_t title_length = 0, description_length = 0, icon_length = 0;
     time_t expiration_timestamp;
     int processed;
-    if (
-      (sscanf(stream_line_buffer, "{%lu,%lu,%lu},%u,%ld,%d", &icon_length, &title_length, &description_length, &UID, &expiration_timestamp, &processed) > 0) &&
-      (title_length > 0)) {
+    if ((sscanf(stream_line_buffer, "{%lu,%lu,%lu},%u,%ld,%d", &icon_length, &title_length, &description_length, &UID,
+            &expiration_timestamp, &processed) > 0) && (title_length > 0)) {
       char *stream_line_tail = strchr(stream_line_buffer, '"');
       if (stream_line_tail) {
         char title[(title_length + 1)], description[(description_length + 1)], icon[(icon_length + 1)];
@@ -146,7 +145,7 @@ int f_reminder_delete(s_reminder *array_reminders, unsigned int UID) {
 int f_reminder_process(s_reminder *array_reminders) {
   time_t current_timestamp = time(NULL);
   int result = 0;
-  for (unsigned int index = 0; index < d_array_size(array_reminders); ++index)
+  for (int index = (d_array_size(array_reminders) - 1); index >= 0; --index)
     if ((array_reminders[index].initialized) && (!array_reminders[index].processed))
       if (array_reminders[index].expiration_timestamp <= current_timestamp) {
         f_notification_show(array_reminders[index].title, array_reminders[index].description, array_reminders[index].icon);

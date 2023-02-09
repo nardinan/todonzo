@@ -20,17 +20,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-#define OK 0
-#define KO 1
-#define SAVE_REQUIRED 2
 #include <ctype.h>
 #include "reminder.h"
 #include "lock.h"
+#define OK 0
+#define KO 1
+#define SAVE_REQUIRED 2
 typedef int (*t_todonzo_process)(int, char **, s_reminder *);
-typedef int (*t_todonzo_run_on_UID)(int, s_reminder *);
-static void p_todonzo_run_on_UID(const char *UID_list, t_todonzo_run_on_UID f_todonzo_run_on_UID, s_reminder *reminders) {
-
-}
 static int p_todonzo_parse_time_offset(const char *delta_time, const char *fixed_time, time_t *reference_timestamp, time_t *final_timestamp) {
   time_t current_timestamp = time(NULL);
   struct tm *current_time_definition = localtime(&current_timestamp);
@@ -133,7 +129,7 @@ int f_todonzo_add(int argc, char *argv[], s_reminder *reminders) {
   return result;
 }
 int f_todonzo_delete(int argc, char *argv[], s_reminder *reminders) {
-  int result = KO;
+  int result = OK;
   if (argc > 0) {
     int UID = -1;
     char *UID_list = argv[0];
@@ -145,12 +141,13 @@ int f_todonzo_delete(int argc, char *argv[], s_reminder *reminders) {
       } else if (UID >= 0) {
         if (f_reminder_delete(reminders, UID) > 0)
           result = SAVE_REQUIRED;
-        else if (result == KO)
-          result = OK;
         UID = -1;
       }
       ++UID_list;
     }
+    if (UID >= 0)
+      if (f_reminder_delete(reminders, UID) > 0)
+        result = SAVE_REQUIRED;
   }
   return result;
 }
@@ -164,6 +161,10 @@ int f_todonzo_show(int argc, char *argv[], s_reminder *reminders) {
 int f_todonzo_run(int argc, char *argv[], s_reminder *reminders) {
   return ((f_reminder_process(reminders) > 0) ? SAVE_REQUIRED : OK );
 }
+int f_todonzo_version(int argc, char *argv[], s_reminder *reminders) {
+  printf("%s %d.%d.%d\n", d_application_name, d_application_version_major, d_application_version_minor, d_application_version_patch);
+  return OK;
+}
 int main(int argc, char *argv[]) {
   int result = KO;
   static const struct {
@@ -174,6 +175,7 @@ int main(int argc, char *argv[]) {
     { "-d", "--delete", f_todonzo_delete },
     { "-s", "--show", f_todonzo_show },
     { "-r", "--run", f_todonzo_run },
+    { "-v", "--version", f_todonzo_version },
     { NULL, NULL, NULL }
   };
   if (argc > 1) {
@@ -212,6 +214,7 @@ int main(int argc, char *argv[]) {
         "\t%1$s {-s or --show} [-x or --expired]\n"
         "\t%1$s {-r or --run}\n"
         "\t%1$s {-h or --help}\n"
+        "\t%1$s {-v or --version}\n"
         "\n"
         "Todonzo is the perfect companion for any busy programmer, constantly focused on a terminal writing code or\n"
         "typing commands. The system is relatively easy to use and fast to interface with any application you want \n"

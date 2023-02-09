@@ -32,5 +32,4 @@
 #define d_notification_bold         "\x1B[1m"
 #define d_notification_reset        "\x1B[0m"
 extern void f_notification_show(const char *title, const char *message, const char *icon);
-extern int f_notification_show_terminal(const char *title, const char *message);
 #endif //TODONZO_NOTIFICATION_H
