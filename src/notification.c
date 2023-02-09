@@ -41,22 +41,25 @@ int f_notification_show_terminal(const char *title, const char *message) {
   int result = 0;
   if (asprintf(&message_buffer, "\n\n"d_application_name" says:\n"d_notification_bold"%s\n"d_notification_reset""
       d_notification_italic"%s\n\n"d_notification_reset, title, message) >= 0) {
-    struct utmp *session;
     size_t message_buffer_length = strlen(message_buffer);
-    setutent();
-    while ((session = getutent()))
-      if (session->ut_type == USER_PROCESS)
-        if (strcmp(session->ut_user, getenv("$USER")) == 0) {
-          char terminal_file_path[PATH_MAX];
-          int terminal_file_stream;
-          snprintf(terminal_file_path, PATH_MAX, "/dev/%s", session->ut_line);
-          if ((terminal_file_stream = open(terminal_file_path, O_RDWR)) >= 0) {
-            lseek(terminal_file_stream, 1, SEEK_SET);
-            write(terminal_file_stream, message_buffer, message_buffer_length);
-            close(terminal_file_stream);
-            ++result;
+    char *user_reference;
+    if ((user_reference = getenv("USER"))) {
+      struct utmp *session;
+      setutent();
+      while ((session = getutent()))
+        if (session->ut_type == USER_PROCESS)
+          if (strcmp(session->ut_user, user_reference) == 0) {
+            char terminal_file_path[PATH_MAX];
+            int terminal_file_stream;
+            snprintf(terminal_file_path, PATH_MAX, "/dev/%s", session->ut_line);
+            if ((terminal_file_stream = open(terminal_file_path, O_RDWR)) >= 0) {
+              lseek(terminal_file_stream, 1, SEEK_SET);
+              write(terminal_file_stream, message_buffer, message_buffer_length);
+              close(terminal_file_stream);
+              ++result;
+            }
           }
-        }
+    }
     free(message_buffer);
   }
   return result;
