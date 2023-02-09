@@ -131,22 +131,22 @@ int f_todonzo_add(int argc, char *argv[], s_reminder *reminders) {
 int f_todonzo_delete(int argc, char *argv[], s_reminder *reminders) {
   int result = OK;
   if (argc > 0) {
-    int UID = -1;
+    unsigned int UID = m_reminder_UID; /* m_reminder_UID keeps the next UID which has not yet been assigned */
     char *UID_list = argv[0];
     while (*UID_list) {
       if (isdigit(*UID_list)) {
-        if (UID < 0)
+        if (UID == m_reminder_UID)
           UID = 0;
         UID = (UID * 10) + (*UID_list - '0');
-      } else if (UID >= 0) {
-        if (f_reminder_delete(reminders, UID) > 0)
+      } else if (UID != m_reminder_UID) {
+        if (f_reminder_delete(reminders, &UID) > 0)
           result = SAVE_REQUIRED;
-        UID = -1;
+        UID = m_reminder_UID;
       }
       ++UID_list;
     }
-    if (UID >= 0)
-      if (f_reminder_delete(reminders, UID) > 0)
+    if (UID != m_reminder_UID)
+      if (f_reminder_delete(reminders, &UID) > 0)
         result = SAVE_REQUIRED;
   }
   return result;
@@ -201,6 +201,7 @@ int main(int argc, char *argv[]) {
           fclose(configuration_file_stream);
         }
       f_lock_unlock(lock_file_stream);
+      f_reminder_delete(reminders, NULL);
       f_array_free(reminders);
     }
   }

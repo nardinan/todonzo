@@ -46,6 +46,7 @@ char *f_xdg_get_home(char *buffer, size_t size) {
     snprintf(buffer, size, "%s/.local/share", getenv("HOME"));
   else
     strncpy(buffer, xdg_folder_home, size);
+  buffer[size - 1] = 0;
   p_xdg_check_and_create(buffer);
   return buffer;
 }
@@ -73,25 +74,33 @@ char *f_xdg_get_runtime(char *buffer, size_t size) {
     strncpy(buffer, "/tmp/"d_application_name, size);
   else
     strncpy(buffer, xdg_folder_runtime, size);
+  buffer[size - 1] = 0;
   p_xdg_check_and_create(buffer);
   return buffer;
 }
 char *f_application_get_home(char *buffer, size_t size) {
+  size_t residual_size;
   f_xdg_get_home(buffer, size);
-  strncat(buffer, "/"d_application_name, size);
-  p_xdg_check_and_create(buffer);
+  if ((residual_size = (size - strlen(buffer))) > 0) {
+    strncat(buffer, "/"d_application_name, --residual_size);
+    p_xdg_check_and_create(buffer);
+  }
   return buffer;
 }
 char *f_application_get_configuration(char *buffer, size_t size) {
+  size_t residual_size;
   f_application_get_home(buffer, size);
-  strncat(buffer, "/"d_application_name".csv", size);
+  if ((residual_size = (size - strlen(buffer))) > 0)
+    strncat(buffer, "/"d_application_name".csv", --residual_size);
   return buffer;
 }
 char *f_application_get_icon(char *buffer, size_t size) {
   return f_xdg_search_data(buffer, size, d_application_name".png");
 }
 char *f_application_get_lock(char *buffer, size_t size) {
+  size_t residual_size;
   f_xdg_get_runtime(buffer, size);
-  strncat(buffer, "/"d_application_name".lock", size);
+  if ((residual_size = (size - strlen(buffer))) > 0)
+    strncat(buffer, "/"d_application_name".lock", --residual_size);
   return buffer;
 }

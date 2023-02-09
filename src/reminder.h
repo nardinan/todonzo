@@ -38,6 +38,6 @@ extern s_reminder *f_reminder_add(s_reminder *array_reminders, unsigned int UID,
 extern void f_reminder_save(s_reminder *array_reminders, FILE *stream);
 extern void f_reminder_human_readable_output(s_reminder *array_reminders, bool show_expired, FILE *stream);
 extern s_reminder *f_reminder_load(s_reminder *array_reminders, FILE *stream);
-extern int f_reminder_delete(s_reminder *array_reminders, unsigned int UID);
+extern int f_reminder_delete(s_reminder *array_reminders, unsigned int *UID);
 extern int f_reminder_process(s_reminder *array_reminders);
 #endif //TODONZO_REMINDER_H

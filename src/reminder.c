@@ -32,13 +32,14 @@ static void p_reminder_escape_string(char *string, char forbidden_character, cha
 }
 s_reminder *f_reminder_add(s_reminder *array_reminders, unsigned int UID, const char *title, const char *description, const char *icon,
   time_t reminder_trigger_timestamp, bool processed) {
-  if ((title) && (icon)) {
+  if (title) {
     array_reminders = (s_reminder *)f_array_validate_access((void *)array_reminders, m_reminder_index);
     array_reminders[m_reminder_index].UID = UID;
     array_reminders[m_reminder_index].expiration_timestamp = reminder_trigger_timestamp;
     array_reminders[m_reminder_index].title = strdup(title);
-    array_reminders[m_reminder_index].icon = strdup(icon);
     p_reminder_escape_string(array_reminders[m_reminder_index].title, '"', '-');
+    if (icon)
+      array_reminders[m_reminder_index].icon = strdup(icon);
     if (description) {
       array_reminders[m_reminder_index].description = strdup(description);
       p_reminder_escape_string(array_reminders[m_reminder_index].description, '"', '-');
@@ -105,19 +106,28 @@ s_reminder *f_reminder_load(s_reminder *array_reminders, FILE *stream) {
   char *stream_line_buffer = NULL;
   size_t stream_line_length = 0;
   while (getline(&stream_line_buffer, &stream_line_length, stream) > 0) {
-    unsigned int UID;
+    unsigned int UID = m_reminder_UID;
     size_t title_length = 0, description_length = 0, icon_length = 0;
-    time_t expiration_timestamp;
-    int processed;
+    time_t expiration_timestamp = 0;
+    int processed = 0;
     if ((sscanf(stream_line_buffer, "{%lu,%lu,%lu},%u,%ld,%d", &icon_length, &title_length, &description_length, &UID,
             &expiration_timestamp, &processed) > 0) && (title_length > 0)) {
-      char *stream_line_tail = strchr(stream_line_buffer, '"');
-      if (stream_line_tail) {
+      char *stream_line_tail;
+      if ((stream_line_tail = strchr(stream_line_buffer, '"'))) {
         char title[(title_length + 1)], description[(description_length + 1)], icon[(icon_length + 1)];
         memset(title, 0, (title_length + 1));
         memset(description, 0, (description_length + 1));
         memset(icon, 0, (icon_length + 1));
-        if (sscanf(stream_line_tail, "\"%[^\"]\",\"%[^\"]\",\"%[^\"]\"", icon, title, description) > 0) {
+        if (strlen(stream_line_tail) >= (1 + icon_length + 3 + title_length + 3 + icon_length + 1)) {
+          ++stream_line_tail;
+          if (icon_length)
+            strncpy(icon, stream_line_tail, icon_length);
+          stream_line_tail += (icon_length + 3);
+          if (title_length)
+            strncpy(title, stream_line_tail, title_length);
+          stream_line_tail += (title_length + 3);
+          if (description_length)
+            strncpy(description, stream_line_tail, description_length);
           array_reminders = f_reminder_add(array_reminders,
             UID,
             title,
@@ -125,18 +135,24 @@ s_reminder *f_reminder_load(s_reminder *array_reminders, FILE *stream) {
             ((icon_length) ? icon : NULL),
             expiration_timestamp,
             ((processed) ? true : false));
-        }
+        } else
+          fprintf(stderr, "Tainted record '%s'; The record has been discarded\n", stream_line_buffer);
       }
     }
     memset(stream_line_buffer, 0, stream_line_length);
   }
   return array_reminders;
 }
-int f_reminder_delete(s_reminder *array_reminders, unsigned int UID) {
+int f_reminder_delete(s_reminder *array_reminders, unsigned int *UID) {
   int result = 0;
   for (unsigned int index = 0; index < d_array_size(array_reminders); ++index)
-    if ((array_reminders[index].initialized) && (array_reminders[index].UID == UID)) {
+    if ((array_reminders[index].initialized) && ((!UID) || (array_reminders[index].UID == *UID))) {
       array_reminders[index].initialized = false;
+      free(array_reminders[index].title);
+      if (array_reminders[index].description)
+        free(array_reminders[index].description);
+      if (array_reminders[index].icon)
+        free(array_reminders[index].icon);
       ++result;
       break;
     }
