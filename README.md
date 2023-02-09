@@ -25,11 +25,8 @@ sudo make install
 Great! Todonzo is now installed. However, you may want him to check if some notification needs to be triggered now and then. To do that, feel free to use cron: we can ask our friend cron to check for pending notifications every minute:
 
 ```console
-app_todonzo=`which todonzo` && cat <<EOF | sudo tee /etc/cron.d/todonzo
-DISPLAY=":0.0"
-XAUTHORITY="/home/$USER/.Xauthority"
-XDG_RUNTIME_DIR="/run/user/1000"
-DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus
+app_todonzo=`which todonzo` && user_enviroment=`env` && cat <<EOF | sudo tee /etc/cron.d/todonzo
+$user_environment
 
 * * * * * $USER . /home/$USER/.profile ; $app_todonzo -r
 EOF
