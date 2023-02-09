@@ -136,7 +136,7 @@ s_reminder *f_reminder_load(s_reminder *array_reminders, FILE *stream) {
             expiration_timestamp,
             ((processed) ? true : false));
         } else
-          fprintf(stderr, "Tainted record '%s'; The record has been discarded\n", stream_line_buffer);
+          fprintf(stderr, "Woops:\n\tTainted record '%s'; The record has been discarded\n\n", stream_line_buffer);
       }
     }
     memset(stream_line_buffer, 0, stream_line_length);

@@ -56,7 +56,7 @@ static int p_todonzo_parse_time_offset(const char *delta_time, const char *fixed
           break;
         }
       if (!delta_time_extensions[index_extension].short_extension) {
-        fprintf(stderr, "Unable to parse correctly the delta time ('%s' doesn't make any sense as it doesn't match with our time domain)\n",
+        fprintf(stderr, "Woops:\n\tunable to parse correctly the delta time ('%s' doesn't make any sense as it doesn't match with our time domain)\n\n",
           delta_time);
         result = KO;
       }
@@ -77,7 +77,7 @@ static int p_todonzo_parse_time_offset(const char *delta_time, const char *fixed
     if ((current_time_definition->tm_hour < 0) || (current_time_definition->tm_hour > 23) || (current_time_definition->tm_min < 0) ||
         (current_time_definition->tm_min > 59)) {
       fprintf(stderr,
-        "Unable to parse correctly the fixed time (your time cannot be %02d:%02d, this is out of range)\n",
+        "Woops:\n\tunable to parse correctly the fixed time (your time cannot be %02d:%02d, this is out of range)\n\n",
         current_time_definition->tm_hour,
         current_time_definition->tm_min);
       result = KO;
@@ -93,33 +93,33 @@ static int p_todonzo_parse_time_offset(const char *delta_time, const char *fixed
 int f_todonzo_add(int argc, char *argv[], s_reminder *reminders) {
   int result = OK;
   char *title = NULL, *description = NULL, *delta_time = NULL, *fixed_time = NULL;
-  for (unsigned int index_argument = 0; (index_argument < argc) && (result == OK); ++index_argument) {
+  for (unsigned int index_argument = 0; (index_argument < argc) && (result == OK); ++index_argument)
     if (title) {
       switch (*argv[index_argument]) {
         case '+':
           if (delta_time) {
-            fprintf(stderr, "Parameter delta time cannot be re-defined (was already defined here: '%s')\n", delta_time);
+            fprintf(stderr, "Woops:\n\tparameter delta time cannot be re-defined (was already defined here: '%s')\n\n", delta_time);
             result = KO;
           } else
             delta_time = argv[index_argument];
           break;
         case '@':
           if (fixed_time) {
-            fprintf(stderr, "Parameter fixed time cannot be re-defined (was already defined here: '%s')\n", fixed_time);
+            fprintf(stderr, "Woops:\n\tparameter fixed time cannot be re-defined (was already defined here: '%s')\n\n", fixed_time);
             result = KO;
           } else
             fixed_time = argv[index_argument];
           break;
         default:
           if (description) {
-            fprintf(stderr, "Additional parameter is unknown and cannot be associated to anything else (parameter '%s')\n", argv[index_argument]);
+            fprintf(stderr, "Woops:\n\tadditional parameter is unknown and cannot be associated to anything else (parameter '%s')\n\n",
+              argv[index_argument]);
             result = KO;
           } else
             description = argv[index_argument];
       }
     } else
       title = argv[index_argument];
-  }
   if (result == OK) {
     if ((title) && ((delta_time) || (fixed_time))) {
       time_t expiration_timestamp;
@@ -177,14 +177,12 @@ int main(int argc, char *argv[]) {
   static const struct {
     const char *short_parameter, *extend_parameter;
     t_todonzo_process function;
-  } functionalities[] = {
-    { "-a", "--add",  f_todonzo_add },
-    { "-d", "--delete", f_todonzo_delete },
-    { "-s", "--show", f_todonzo_show },
-    { "-r", "--run", f_todonzo_run },
-    { "-v", "--version", f_todonzo_version },
-    { NULL, NULL, NULL }
-  };
+  } functionalities[] = {{"-a", "--add",     f_todonzo_add},
+                         {"-d", "--delete",  f_todonzo_delete},
+                         {"-s", "--show",    f_todonzo_show},
+                         {"-r", "--run",     f_todonzo_run},
+                         {"-v", "--version", f_todonzo_version},
+                         {NULL, NULL, NULL}};
   if (argc > 1) {
     int lock_file_stream;
     if ((lock_file_stream = f_lock_wait_availability()) >= 0) {
@@ -214,31 +212,31 @@ int main(int argc, char *argv[]) {
   }
   if (result == KO) {
     /* we need to print the help page */
-    printf("Todonzo - A quick 'n dirty reminder application for terminals written in C\n\n"
-        "\n"
-        "Usage:\n"
-        "\t%1$s {-a or --add} {title} [description] [+N(w or weeks | d or days | h or hours | m or mins)] [@(hour | hour:minute)]\n"
-        "\t%1$s {-d or --delete} {UID}[,UID,UID,...]\n"
-        "\t%1$s {-s or --show} [-x or --expired]\n"
-        "\t%1$s {-r or --run}\n"
-        "\t%1$s {-h or --help}\n"
-        "\t%1$s {-v or --version}\n"
-        "\n"
-        "Todonzo is the perfect companion for any busy programmer, constantly focused on a terminal writing code or\n"
-        "typing commands. The system is relatively easy to use and fast to interface with any application you want \n"
-        "(e.g., vim). The application uses libnotify to trigger notifications, but it can easily be interfaced with\n"
-        "any notification routine you wish to use.\n"
-        "\n"
-        "The easiest way to use Todonzo to push a new notification is:\n"
-        "\n"
-        "\t%1$s -a \"Call the boss to validate the details of the USS Sulaco\" +1day\n"
-        "\t\tTodonzo will notify you tomorrow at the same time\n"
-        "\n"
-        "\t%1$s -a \"Check progresses in the main branch\" +1week @10:30\n"
-        "\t\tTodonzo will notify you next week, same weekday, at 10:30 AM.\n"
-        "\n"
-        "\t%1$s -a \"Discuss with the team the MU-TH-UR 6000 project\" @17\n"
-        "\t\tTodonzo will notify you today at 5 PM.\n", argv[0]);
+    printf(d_notification_bold"Todonzo"d_notification_reset" - A quick 'n dirty reminder application for terminals written in C\n"
+           "\n\n"
+           "Usage:\n"
+           "\t%1$s {-a or --add} {title} [description] [+N(w or weeks | d or days | h or hours | m or mins)] [@(hour | hour:minute)]\n"
+           "\t%1$s {-d or --delete} {UID}[,UID,UID,...]\n"
+           "\t%1$s {-s or --show} [-x or --expired]\n"
+           "\t%1$s {-r or --run}\n"
+           "\t%1$s {-h or --help}\n"
+           "\t%1$s {-v or --version}\n"
+           "\n\n"
+           "Todonzo is the perfect companion for any busy programmer, constantly focused on a terminal writing code or\n"
+           "typing commands. The system is relatively easy to use and fast to interface with any application you want \n"
+           "(e.g., vim). The application uses libnotify to trigger notifications, but it can easily be interfaced with\n"
+           "any notification routine you wish to use.\n"
+           "\n"
+           "The easiest way to use Todonzo to push a new notification is:\n"
+           "\n"
+           "\t%1$s -a \"Call the boss to validate the details of the USS Sulaco\" +1day\n"
+           "\t\tTodonzo will notify you tomorrow at the same time\n"
+           "\n"
+           "\t%1$s -a \"Check progresses in the main branch\" +1week @10:30\n"
+           "\t\tTodonzo will notify you next week, same weekday, at 10:30 AM.\n"
+           "\n"
+           "\t%1$s -a \"Discuss with the team the MU-TH-UR 6000 project\" @17\n"
+           "\t\tTodonzo will notify you today at 5 PM.\n", argv[0]);
   }
   return 0;
 }
