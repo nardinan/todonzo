@@ -26,7 +26,7 @@
 #define OK 0
 #define KO 1
 #define SAVE_REQUIRED 2
-typedef int (*t_todonzo_process)(int, char **, s_reminder *);
+typedef int (*t_todonzo_process)(int, char **, s_reminder **);
 static int p_todonzo_parse_time_offset(const char *delta_time, const char *fixed_time, time_t *reference_timestamp, time_t *final_timestamp) {
   time_t current_timestamp = time(NULL);
   struct tm *current_time_definition = localtime(&current_timestamp);
@@ -93,7 +93,7 @@ static int p_todonzo_parse_time_offset(const char *delta_time, const char *fixed
   }
   return result;
 }
-int f_todonzo_add(int argc, char *argv[], s_reminder *reminders) {
+int f_todonzo_add(int argc, char *argv[], s_reminder **reminders) {
   int result = OK;
   char *title = NULL, *description = NULL, *delta_time = NULL, *fixed_time = NULL;
   for (unsigned int index_argument = 0; (index_argument < argc) && (result == OK); ++index_argument)
@@ -130,7 +130,7 @@ int f_todonzo_add(int argc, char *argv[], s_reminder *reminders) {
         char icon_file_path[PATH_MAX];
         memset(icon_file_path, 0, PATH_MAX);
         f_application_get_icon(icon_file_path, PATH_MAX);
-        f_reminder_add(reminders, m_reminder_UID, title, description, icon_file_path, expiration_timestamp, false);
+        *reminders = f_reminder_add(*reminders, m_reminder_UID, title, description, icon_file_path, expiration_timestamp, false);
         result = SAVE_REQUIRED;
       }
     } else
@@ -138,7 +138,7 @@ int f_todonzo_add(int argc, char *argv[], s_reminder *reminders) {
   }
   return result;
 }
-int f_todonzo_delete(int argc, char *argv[], s_reminder *reminders) {
+int f_todonzo_delete(int argc, char *argv[], s_reminder **reminders) {
   int result = OK;
   if (argc > 0) {
     unsigned int UID = m_reminder_UID; /* m_reminder_UID keeps the next UID which has not yet been assigned */
@@ -149,29 +149,29 @@ int f_todonzo_delete(int argc, char *argv[], s_reminder *reminders) {
           UID = 0;
         UID = (UID * 10) + (*UID_list - '0');
       } else if (UID != m_reminder_UID) {
-        if (f_reminder_delete(reminders, &UID) > 0)
+        if (f_reminder_delete(*reminders, &UID) > 0)
           result = SAVE_REQUIRED;
         UID = m_reminder_UID;
       }
       ++UID_list;
     }
     if (UID != m_reminder_UID)
-      if (f_reminder_delete(reminders, &UID) > 0)
+      if (f_reminder_delete(*reminders, &UID) > 0)
         result = SAVE_REQUIRED;
   }
   return result;
 }
-int f_todonzo_show(int argc, char *argv[], s_reminder *reminders) {
+int f_todonzo_show(int argc, char *argv[], s_reminder **reminders) {
   bool show_expired = false;
   if ((argc > 0) && ((strcmp(argv[0], "-x") == 0) || (strcmp(argv[0], "--expired") == 0)))
     show_expired = true;
-  f_reminder_human_readable_output(reminders, show_expired, stdout);
+  f_reminder_human_readable_output(*reminders, show_expired, stdout);
   return OK;
 }
-int f_todonzo_run(int argc, char *argv[], s_reminder *reminders) {
-  return ((f_reminder_process(reminders) > 0) ? SAVE_REQUIRED : OK );
+int f_todonzo_run(int argc, char *argv[], s_reminder **reminders) {
+  return ((f_reminder_process(*reminders) > 0) ? SAVE_REQUIRED : OK );
 }
-int f_todonzo_version(int argc, char *argv[], s_reminder *reminders) {
+int f_todonzo_version(int argc, char *argv[], s_reminder **reminders) {
   printf("%s %d.%d.%d\n", d_application_name, d_application_version_major, d_application_version_minor, d_application_version_patch);
   return OK;
 }
@@ -194,13 +194,13 @@ int main(int argc, char *argv[]) {
       s_reminder *reminders = f_array_malloc(8, sizeof(s_reminder));
       f_application_get_configuration(configuration_file_path, PATH_MAX);
       if ((configuration_file_stream = fopen(configuration_file_path, "r"))) {
-        f_reminder_load(reminders, configuration_file_stream);
+        reminders = f_reminder_load(reminders, configuration_file_stream);
         fclose(configuration_file_stream);
       }
       for (unsigned int index_functionalities = 0; (functionalities[index_functionalities].short_parameter); ++index_functionalities)
         if ((strcmp(argv[1], functionalities[index_functionalities].short_parameter) == 0) ||
             ((functionalities[index_functionalities].extend_parameter) && (strcmp(argv[1], functionalities[index_functionalities].extend_parameter) == 0))) {
-          result = functionalities[index_functionalities].function((argc - 2), &(argv[2]), reminders);
+          result = functionalities[index_functionalities].function((argc - 2), &(argv[2]), &reminders);
           break;
         }
       if (result == SAVE_REQUIRED)
