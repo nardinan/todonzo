@@ -215,6 +215,7 @@ int main(int argc, char *argv[]) {
   }
   if (result == KO) {
     /* we need to print the help page */
+    f_notification_show("Halea", "Salut salut? How are you doing? I am doing <b>great</b>", "../todonzo/todonzo.png");
     printf(d_notification_bold"Todonzo"d_notification_reset" - A quick 'n dirty reminder application for terminals written in C\n"
            "\n\n"
            "Usage:\n"

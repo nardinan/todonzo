@@ -22,7 +22,6 @@
  */
 #ifndef TODONZO_NOTIFICATION_H
 #define TODONZO_NOTIFICATION_H
-#include <libnotify/notify.h>
 #include <stdio.h>
 #include <string.h>
 #include "xdg.h"

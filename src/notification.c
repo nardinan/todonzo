@@ -20,22 +20,53 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+#include <SDL.h>
+#include <SDL_image.h>
 #include "notification.h"
 void f_notification_show(const char *title, const char *message, const char *icon) {
-  char *formatted_message_buffer = NULL;
-  if (message)
-    asprintf(&formatted_message_buffer, "<b>%s</b>\n%s", title, message);
-  else
-    asprintf(&formatted_message_buffer, "<b>%s</b>", title);
-  if (formatted_message_buffer) {
-    NotifyNotification *notification;
-    notify_init(d_application_name);
-    if ((notification = notify_notification_new(d_application_name" says:", formatted_message_buffer, icon))) {
-      notify_notification_set_urgency(notification, NOTIFY_URGENCY_CRITICAL);
-      notify_notification_set_timeout(notification, NOTIFY_EXPIRES_NEVER);
-      notify_notification_show(notification, NULL);
+  if (SDL_Init(SDL_INIT_VIDEO) >= 0) {
+    int index = 20;
+    SDL_Window *window;
+    if ((window = SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 640, 240,
+      (SDL_WINDOW_SHOWN | SDL_WINDOW_ALWAYS_ON_TOP | SDL_WINDOW_OPENGL)))) {
+      SDL_Renderer *renderer;
+      SDL_SetWindowBordered(window, SDL_FALSE);
+      if ((renderer = SDL_CreateRenderer(window, -1, (SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC)))) {
+        SDL_Texture *texture = NULL;
+        SDL_Rect destination = { 0, 0, 0, 0 };
+        SDL_Event event;
+        if (icon) {
+          if (IMG_Init((IMG_INIT_PNG | IMG_INIT_JPG)) == (IMG_INIT_PNG | IMG_INIT_JPG)) {
+            SDL_Surface *image = NULL;
+            if ((image = IMG_Load(icon))) {
+              if ((texture = SDL_CreateTextureFromSurface(renderer, image))) {
+                int width, height;
+                SDL_QueryTexture(texture, NULL, NULL, &width, &height);
+                destination.w = width;
+                destination.h = height;
+              }
+              SDL_FreeSurface(image);
+            }
+          }
+        }
+        while ((index > 0)) {
+          SDL_PollEvent(&event);
+          if (texture) {
+            SDL_RenderClear(renderer);
+            SDL_RenderCopy(renderer, texture, NULL, &destination);
+          }
+          SDL_RenderPresent(renderer);
+          SDL_Delay(100);
+          --index;
+        }
+        if (icon) {
+          if (texture)
+            SDL_DestroyTexture(texture);
+          IMG_Quit();
+        }
+      }
     }
-    free(formatted_message_buffer);
+    SDL_Quit();
   }
 }
 
