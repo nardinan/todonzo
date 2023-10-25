@@ -39,5 +39,6 @@ extern char *f_xdg_get_runtime(char *buffer, size_t size);
 extern char *f_application_get_home(char *buffer, size_t size);
 extern char *f_application_get_configuration(char *buffer, size_t size);
 extern char *f_application_get_icon(char *buffer, size_t size);
+extern char *f_application_get_font(char *buffer, size_t size);
 extern char *f_application_get_lock(char *buffer, size_t size);
 #endif //TODONZO_XDG_H

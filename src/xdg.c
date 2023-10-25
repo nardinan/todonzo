@@ -51,8 +51,8 @@ char *f_xdg_get_home(char *buffer, size_t size) {
   return buffer;
 }
 char *f_xdg_search_data(char *buffer, size_t size, const char *filename) {
-  static char *xdg_folders_data_fallback = "/usr/local/share/:/usr/share/";
-  char *xdg_folders_data, *starting_pointer, *ending_pointer;
+  char *xdg_folders_data, *starting_pointer, *ending_pointer,
+    xdg_folders_data_fallback[] = "/usr/local/share/:/usr/share/:./:../";
   if (!(xdg_folders_data = getenv("XDG_DATA_DIRS")))
     xdg_folders_data = xdg_folders_data_fallback;
   starting_pointer = xdg_folders_data;
@@ -96,6 +96,9 @@ char *f_application_get_configuration(char *buffer, size_t size) {
 }
 char *f_application_get_icon(char *buffer, size_t size) {
   return f_xdg_search_data(buffer, size, d_application_name".png");
+}
+char *f_application_get_font(char *buffer, size_t size) {
+  return f_xdg_search_data(buffer, size, d_application_name".ttf");
 }
 char *f_application_get_lock(char *buffer, size_t size) {
   size_t residual_size;

@@ -25,10 +25,11 @@
 #include <stdio.h>
 #include <string.h>
 #include "xdg.h"
-#define d_notification_color_green  "\x1B[32m"
 #define d_notification_color_yellow "\x1B[33m"
-#define d_notification_italic       "\x1B[3m"
-#define d_notification_bold         "\x1B[1m"
-#define d_notification_reset        "\x1B[0m"
+#define d_notification_bold "\x1B[1m"
+#define d_notification_reset "\x1B[0m"
+#define d_notification_size_w 480
+#define d_notification_size_h 120
+#define d_notification_maximum_string_size 255
 extern void f_notification_show(const char *title, const char *message, const char *icon);
 #endif //TODONZO_NOTIFICATION_H
