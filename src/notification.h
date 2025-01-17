@@ -24,6 +24,7 @@
 #define TODONZO_NOTIFICATION_H
 #include <stdio.h>
 #include <string.h>
+#include <stdbool.h>
 #include "xdg.h"
 #define d_notification_color_yellow       "\x1b[33m"
 #define d_notification_color_yellow_bold  "\x1b[33m\x1b[1m"
@@ -34,5 +35,5 @@
 #define d_notification_italic             "\x1b[3m"
 #define d_notification_bold               "\x1b[1m"
 #define d_notification_reset              "\x1b[0m"
-extern void f_notification_show(const char *title, const char *message);
+extern bool f_notification_show(const char *title, const char *message);
 #endif //TODONZO_NOTIFICATION_H

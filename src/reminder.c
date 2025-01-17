@@ -164,8 +164,8 @@ int f_reminder_process(s_reminder *array_reminders) {
   for (int index = (d_array_size(array_reminders) - 1); index >= 0; --index)
     if ((array_reminders[index].initialized) && (!array_reminders[index].processed))
       if (array_reminders[index].expiration_timestamp <= current_timestamp) {
-        f_notification_show(array_reminders[index].title, array_reminders[index].description);
-        array_reminders[index].processed = true;
+        if (f_notification_show(array_reminders[index].title, array_reminders[index].description))
+          array_reminders[index].processed = true;
         ++result;
         break;
       }
