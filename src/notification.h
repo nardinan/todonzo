@@ -22,14 +22,17 @@
  */
 #ifndef TODONZO_NOTIFICATION_H
 #define TODONZO_NOTIFICATION_H
-#include <libnotify/notify.h>
 #include <stdio.h>
 #include <string.h>
 #include "xdg.h"
-#define d_notification_color_green  "\x1B[32m"
-#define d_notification_color_yellow "\x1B[33m"
-#define d_notification_italic       "\x1B[3m"
-#define d_notification_bold         "\x1B[1m"
-#define d_notification_reset        "\x1B[0m"
-extern void f_notification_show(const char *title, const char *message, const char *icon);
+#define d_notification_color_yellow       "\x1b[33m"
+#define d_notification_color_yellow_bold  "\x1b[33m\x1b[1m"
+#define d_notification_color_gray         "\x1b[37m"
+#define d_notification_color_gray_bold    "\x1b[37m\x1b[1m"
+#define d_notification_color_white        "\x1b[97m"
+#define d_notification_color_white_bold   "\x1b[97m\x1b[1m"
+#define d_notification_italic             "\x1b[3m"
+#define d_notification_bold               "\x1b[1m"
+#define d_notification_reset              "\x1b[0m"
+extern void f_notification_show(const char *title, const char *message);
 #endif //TODONZO_NOTIFICATION_H

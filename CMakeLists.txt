@@ -17,11 +17,7 @@ add_executable(todonzo
   src/lock.h)
 
 find_package(PkgConfig REQUIRED)
-pkg_check_modules(NOTIFY REQUIRED libnotify)
-target_link_libraries(todonzo ${NOTIFY_LIBRARIES})
 target_link_libraries(todonzo m)
-target_include_directories(todonzo PUBLIC ${NOTIFY_INCLUDE_DIRS})
-target_compile_options(todonzo PUBLIC ${NOTIFY_CFLAGS_OTHER})
 
 install(TARGETS todonzo DESTINATION bin)
 install(DIRECTORY todonzo DESTINATION share)

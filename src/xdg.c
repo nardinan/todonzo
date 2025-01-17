@@ -51,8 +51,8 @@ char *f_xdg_get_home(char *buffer, size_t size) {
   return buffer;
 }
 char *f_xdg_search_data(char *buffer, size_t size, const char *filename) {
-  static char *xdg_folders_data_fallback = "/usr/local/share/:/usr/share/";
-  char *xdg_folders_data, *starting_pointer, *ending_pointer;
+  char *xdg_folders_data, *starting_pointer, *ending_pointer,
+    xdg_folders_data_fallback[] = "/usr/local/share/:/usr/share/:./:../";
   if (!(xdg_folders_data = getenv("XDG_DATA_DIRS")))
     xdg_folders_data = xdg_folders_data_fallback;
   starting_pointer = xdg_folders_data;
