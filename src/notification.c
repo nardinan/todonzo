@@ -20,38 +20,49 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+#include <sys/stat.h>
 #include <dirent.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <utmpx.h>
+#include <pwd.h>
 #ifndef HOST_NAME_MAX
 #define HOST_NAME_MAX 256 /* a default length of the hostname */
 #endif
 #include "notification.h"
-bool p_notification_show_write(const char *whole_path, const char *whole_message) {
+static bool p_notification_is_terminal_active(const char *path) {
   bool result = false;
-  DIR *dev_directory;
-  if ((dev_directory = opendir(whole_path))) {
-    char new_whole_path[PATH_MAX];
-    struct dirent *entry;
-    while ((entry = readdir(dev_directory))) {
-      memset(new_whole_path, 0, PATH_MAX);
-      snprintf(new_whole_path, PATH_MAX, "%s/%s", whole_path, entry->d_name);
-      if (entry->d_type == DT_DIR) {
-        if (entry->d_name[0] != '.')
-          if (p_notification_show_write(new_whole_path, whole_message))
-            result = true;
-      } else if ((strstr(new_whole_path, "tty")) || (strstr(new_whole_path, "pts"))) {
-        int terminal_hook_descriptor;
-        if ((terminal_hook_descriptor = open(new_whole_path, O_WRONLY | O_NONBLOCK)) >= 0) {
-          if (write(terminal_hook_descriptor, whole_message, strlen(whole_message)) > 0) {
-            printf("notification '%s' has been succesfully delivered to %s", whole_message, new_whole_path);
-            result = true;
+  struct stat st;
+  if (stat(path, &st) == 0)
+    if ((time(NULL) - st.st_mtime) < d_notification_IDLE_time_seconds)
+      result = true;
+  return result;
+}
+static bool p_notification_show_write(const char *whole_path, const char *whole_message) {
+  bool result = false;
+  struct passwd *current_user = getpwuid(getuid());
+  if ((current_user) && (current_user->pw_name)) {
+    setutxent();
+    {
+      struct utmpx *entry;
+      char new_whole_path[PATH_MAX];
+      while ((entry = getutxent()))
+        if (entry->ut_type == USER_PROCESS)
+          if (strcmp(entry->ut_user, current_user->pw_name) == 0) {
+            int terminal_hook_descriptor;
+            memset(new_whole_path, 0, PATH_MAX);
+            snprintf(new_whole_path, PATH_MAX, "%s/%s", whole_path, entry->ut_line);
+            if (p_notification_is_terminal_active(new_whole_path))
+              if ((terminal_hook_descriptor = open(new_whole_path, O_WRONLY | O_NONBLOCK)) >= 0) {
+                if (write(terminal_hook_descriptor, whole_message, strlen(whole_message)) > 0) {
+                  printf("notification '%s' has been delivered to %s for the user '%s' with success", whole_message, new_whole_path, entry->ut_user);
+                  result = true;
+                }
+                close(terminal_hook_descriptor);
+              }
           }
-          close(terminal_hook_descriptor);
-        }
-      }
     }
-    closedir(dev_directory);
+    endutxent();
   }
   return result;
 }
