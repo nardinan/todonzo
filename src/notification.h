@@ -35,6 +35,6 @@
 #define d_notification_italic             "\x1b[3m"
 #define d_notification_bold               "\x1b[1m"
 #define d_notification_reset              "\x1b[0m"
-#define d_notification_IDLE_time_seconds 300
+#define d_notification_IDLE_time_seconds 120
 extern bool f_notification_show(const char *title, const char *message);
 #endif //TODONZO_NOTIFICATION_H
