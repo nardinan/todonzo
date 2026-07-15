@@ -38,11 +38,15 @@ s_reminder *f_reminder_add(s_reminder *array_reminders, unsigned int UID, const 
     array_reminders[m_reminder_index].expiration_timestamp = reminder_trigger_timestamp;
     array_reminders[m_reminder_index].title = strdup(title);
     p_reminder_escape_string(array_reminders[m_reminder_index].title, '"', '-');
+    p_reminder_escape_string(array_reminders[m_reminder_index].title, '\n', ' ');
+    p_reminder_escape_string(array_reminders[m_reminder_index].title, '\r', ' ');
     if (icon)
       array_reminders[m_reminder_index].icon = strdup(icon);
     if (description) {
       array_reminders[m_reminder_index].description = strdup(description);
       p_reminder_escape_string(array_reminders[m_reminder_index].description, '"', '-');
+      p_reminder_escape_string(array_reminders[m_reminder_index].description, '\n', ' ');
+      p_reminder_escape_string(array_reminders[m_reminder_index].description, '\r', ' ');
     }
     array_reminders[m_reminder_index].processed = processed;
     array_reminders[m_reminder_index].initialized = true;

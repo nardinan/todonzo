@@ -42,9 +42,13 @@ static bool p_xdg_check_file_exists(char *buffer, size_t size, const char *path,
 char *f_xdg_get_home(char *buffer, size_t size) {
   char *xdg_folder_home;
   memset(buffer, 0, size);
-  if (!(xdg_folder_home = getenv("XDG_DATA_HOME")))
-    snprintf(buffer, size, "%s/.local/share", getenv("HOME"));
-  else
+  if (!(xdg_folder_home = getenv("XDG_DATA_HOME"))) {
+    char *user_folder_home;
+    if ((user_folder_home = getenv("HOME")))
+      snprintf(buffer, size, "%s/.local/share", user_folder_home);
+    else
+      strncpy(buffer, "/opt/todonzo/share", size);
+  } else
     strncpy(buffer, xdg_folder_home, size);
   buffer[size - 1] = 0;
   p_xdg_check_and_create(buffer);
