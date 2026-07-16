@@ -162,10 +162,14 @@ int f_todonzo_delete(int argc, char *argv[], s_reminder **reminders) {
   return result;
 }
 int f_todonzo_show(int argc, char *argv[], s_reminder **reminders) {
-  bool show_expired = false;
-  if ((argc > 0) && ((strcmp(argv[0], "-x") == 0) || (strcmp(argv[0], "--expired") == 0)))
-    show_expired = true;
-  f_reminder_human_readable_output(*reminders, show_expired, stdout);
+  bool show_expired = false, no_decorator = false;
+  for (size_t index = 0; index < argc; ++index) {
+    if ((strcmp(argv[index], "-x") == 0) || (strcmp(argv[index], "--expired") == 0))
+      show_expired = true;
+    if ((strcmp(argv[index], "-nd") == 0) || (strcmp(argv[index], "--no-decorator") == 0))
+      no_decorator = true;
+  }
+  f_reminder_human_readable_output(*reminders, show_expired, no_decorator, stdout);
   return OK;
 }
 int f_todonzo_run(int argc, char *argv[], s_reminder **reminders) {
@@ -180,12 +184,8 @@ int main(int argc, char *argv[]) {
   static const struct {
     const char *short_parameter, *extend_parameter;
     t_todonzo_process function;
-  } functionalities[] = {{"-a", "--add",     f_todonzo_add},
-                         {"-d", "--delete",  f_todonzo_delete},
-                         {"-s", "--show",    f_todonzo_show},
-                         {"-r", "--run",     f_todonzo_run},
-                         {"-v", "--version", f_todonzo_version},
-                         {NULL, NULL, NULL}};
+  } functionalities[] = {{"-a", "--add", f_todonzo_add}, {"-d", "--delete", f_todonzo_delete}, {"-s", "--show", f_todonzo_show}, {"-r", "--run", f_todonzo_run},
+      {"-v", "--version", f_todonzo_version}, {NULL, NULL, NULL}};
   if (argc > 1) {
     int lock_file_stream;
     if ((lock_file_stream = f_lock_wait_availability()) >= 0) {
@@ -215,31 +215,32 @@ int main(int argc, char *argv[]) {
   }
   if (result == KO) {
     /* we need to print the help page */
-    printf(d_notification_bold"Todonzo"d_notification_reset" - A quick 'n dirty reminder application for terminals written in C\n"
-           "\n\n"
-           "Usage:\n"
-           "\t%1$s {-a or --add} {title} [description] [+N(w or weeks | d or days | h or hours | m or mins)] [@(hour | hour:minute)]\n"
-           "\t%1$s {-d or --delete} {UID}[,UID,UID,...]\n"
-           "\t%1$s {-s or --show} [-x or --expired]\n"
-           "\t%1$s {-r or --run}\n"
-           "\t%1$s {-h or --help}\n"
-           "\t%1$s {-v or --version}\n"
-           "\n\n"
-           "Todonzo is the perfect companion for any busy programmer, constantly focused on a terminal writing code or\n"
-           "typing commands. The system is relatively easy to use and fast to interface with any application you want \n"
-           "(e.g., vim). The application uses libnotify to trigger notifications, but it can easily be interfaced with\n"
-           "any notification routine you wish to use.\n"
-           "\n"
-           "The easiest way to use Todonzo to push a new notification is:\n"
-           "\n"
-           "\t%1$s -a \"Call the boss to validate the details of the USS Sulaco\" +1day\n"
-           "\t\tTodonzo will notify you tomorrow at the same time\n"
-           "\n"
-           "\t%1$s -a \"Check progresses in the main branch\" +1week @10:30\n"
-           "\t\tTodonzo will notify you next week, same weekday, at 10:30 AM.\n"
-           "\n"
-           "\t%1$s -a \"Discuss with the team the MU-TH-UR 6000 project\" @17\n"
-           "\t\tTodonzo will notify you today at 5 PM.\n", argv[0]);
+    printf(d_notification_bold "Todonzo" d_notification_reset " - A quick 'n dirty reminder application for terminals written in C\n"
+                               "\n\n"
+                               "Usage:\n"
+                               "\t%1$s {-a or --add} {title} [description] [+N(w or weeks | d or days | h or hours | m or mins)] [@(hour | hour:minute)]\n"
+                               "\t%1$s {-d or --delete} {UID}[,UID,UID,...]\n"
+                               "\t%1$s {-s or --show} [-x or --expired] [-nd or --no-decorator]\n"
+                               "\t%1$s {-r or --run}\n"
+                               "\t%1$s {-h or --help}\n"
+                               "\t%1$s {-v or --version}\n"
+                               "\n\n"
+                               "Todonzo is the perfect companion for any busy programmer, constantly focused on a terminal writing code or\n"
+                               "typing commands. The system is relatively easy to use and fast to interface with any application you want \n"
+                               "(e.g., vim). The application uses libnotify to trigger notifications, but it can easily be interfaced with\n"
+                               "any notification routine you wish to use.\n"
+                               "\n"
+                               "The easiest way to use Todonzo to push a new notification is:\n"
+                               "\n"
+                               "\t%1$s -a \"Call the boss to validate the details of the USS Sulaco\" +1day\n"
+                               "\t\tTodonzo will notify you tomorrow at the same time\n"
+                               "\n"
+                               "\t%1$s -a \"Check progresses in the main branch\" +1week @10:30\n"
+                               "\t\tTodonzo will notify you next week, same weekday, at 10:30 AM.\n"
+                               "\n"
+                               "\t%1$s -a \"Discuss with the team the MU-TH-UR 6000 project\" @17\n"
+                               "\t\tTodonzo will notify you today at 5 PM.\n",
+        argv[0]);
   }
   return 0;
 }

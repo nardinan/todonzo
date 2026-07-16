@@ -84,4 +84,3 @@ bool f_notification_show(const char *title, const char *message) {
   }
   return result;
 }
-
