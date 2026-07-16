@@ -34,7 +34,19 @@
 #define d_notification_color_white_bold   "\x1b[97m\x1b[1m"
 #define d_notification_italic             "\x1b[3m"
 #define d_notification_bold               "\x1b[1m"
-#define d_notification_reset              "\x1b[0m"
+#define d_notification_reset "\x1b[0m"
+typedef enum e_notification_colors {
+  e_notification_color_yellow,
+  e_notification_color_yellow_bold,
+  e_notification_color_gray,
+  e_notification_color_gray_bold,
+  e_notification_color_white,
+  e_notification_color_white_bold,
+  e_notification_italic,
+  e_notification_bold,
+  e_notification_reset
+} e_notification_colors;
+extern char *m_notification_colors[];
 #define d_notification_IDLE_time_seconds 120
 extern bool f_notification_show(const char *title, const char *message);
-#endif //TODONZO_NOTIFICATION_H
+#endif // TODONZO_NOTIFICATION_H

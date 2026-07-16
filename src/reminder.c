@@ -79,17 +79,17 @@ void f_reminder_save(s_reminder *array_reminders, FILE *stream) {
             ((array_reminders[index].icon) ? array_reminders[index].icon : ""), ((array_reminders[index].title) ? array_reminders[index].title : ""),
             ((array_reminders[index].description) ? array_reminders[index].description : ""));
 }
-void f_reminder_human_readable_output(s_reminder *array_reminders, bool show_expired, bool no_decorator, FILE *stream) {
+void f_reminder_human_readable_output(s_reminder *array_reminders, bool show_expired, FILE *stream) {
   if (stream) {
     unsigned int UID_digits = floor(log10(m_reminder_UID) + 1);
     for (int index = (d_array_size(array_reminders) - 1); index >= 0; --index)
       if ((array_reminders[index].initialized) && ((show_expired) || (!array_reminders[index].processed))) {
         struct tm *expiration_timestamp_definition = localtime(&(array_reminders[index].expiration_timestamp));
         fprintf(stream, "%s[%*d] \"%s\" set for %02d/%02d/%04d @ %02d:%02d %s%s\n",
-            ((array_reminders[index].processed) ? ((no_decorator) ? "" : d_notification_color_yellow) : ""), UID_digits, array_reminders[index].UID,
+            ((array_reminders[index].processed) ? m_notification_colors[e_notification_color_yellow] : ""), UID_digits, array_reminders[index].UID,
             array_reminders[index].title, expiration_timestamp_definition->tm_mday, (expiration_timestamp_definition->tm_mon + 1),
             (expiration_timestamp_definition->tm_year + 1900), expiration_timestamp_definition->tm_hour, expiration_timestamp_definition->tm_min,
-            ((array_reminders[index].processed) ? "(expired)" : ""), ((no_decorator) ? "" : d_notification_reset));
+            ((array_reminders[index].processed) ? "(expired)" : ""), m_notification_colors[e_notification_reset]);
       }
   }
 }

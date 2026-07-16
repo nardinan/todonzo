@@ -30,6 +30,8 @@
 #define HOST_NAME_MAX 256 /* a default length of the hostname */
 #endif
 #include "notification.h"
+char *m_notification_colors[] = {d_notification_color_yellow, d_notification_color_yellow_bold, d_notification_color_gray, d_notification_color_gray_bold,
+    d_notification_color_white, d_notification_color_white_bold, d_notification_italic, d_notification_bold, d_notification_reset, NULL};
 static bool p_notification_is_terminal_active(const char *path) {
   bool result = false;
   struct stat st;
@@ -72,12 +74,14 @@ bool f_notification_show(const char *title, const char *message) {
   if (gethostname(hostname, HOST_NAME_MAX) == 0) {
     char *buffer_message = NULL;
     if (message)
-      asprintf(&buffer_message, d_notification_reset"\n\r"d_notification_color_gray_bold""d_application_name" on %s reminds you that:"
-        d_notification_reset"\n\r"d_notification_color_yellow_bold"%s"d_notification_reset"\n\r"d_notification_color_yellow"%s"
-        d_notification_reset"\n\r", hostname, title, message);
+      asprintf(&buffer_message, "%s\n\r%s" d_application_name " on %s reminds you that:%s\n\r%s%s%s\n\r%s%s%s\n\r", m_notification_colors[e_notification_reset],
+          m_notification_colors[e_notification_color_gray_bold], hostname, m_notification_colors[e_notification_reset],
+          m_notification_colors[e_notification_color_yellow_bold], title, m_notification_colors[e_notification_reset],
+          m_notification_colors[e_notification_color_yellow], message, m_notification_colors[e_notification_reset]);
     else
-      asprintf(&buffer_message, d_notification_reset"\n\r"d_notification_color_gray_bold""d_application_name" on %s reminds you that:"
-        d_notification_reset"\n\r"d_notification_color_yellow_bold"%s"d_notification_reset"\n\r", hostname, title);
+      asprintf(&buffer_message, "%s\n\r%s" d_application_name " on %s reminds you that:%s\n\r%s%s%s\n\r", m_notification_colors[e_notification_reset],
+          m_notification_colors[e_notification_color_gray_bold], hostname, m_notification_colors[e_notification_reset],
+          m_notification_colors[e_notification_color_yellow_bold], title, m_notification_colors[e_notification_reset]);
     result = p_notification_show_write("/dev", buffer_message);
     if (buffer_message)
       free(buffer_message);
